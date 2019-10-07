@@ -142,13 +142,6 @@ class button (object):
         return (self.surface, self.pos)
 
 
-def cam():
-    """
-    changes the mode of the program to camera
-    """
-    global mode
-    mode = 'cam'
-
 def getCenterPos(dimensions, screenSize):
     """
     getCenterPos(dimensions, screenSize): gets the (x,y) position in order to center an object on its screen\n
@@ -158,6 +151,14 @@ def getCenterPos(dimensions, screenSize):
     center = (screenSize[0]/2-dimensions[0]/2,screenSize[1]/2-dimensions[1]/2)
     return center
 
+def swipe():
+    global swiping
+    global lastPos
+    global mode
+    swiping = True
+
+    lastPos = mouse.centerx
+    mode = "swipe"
 
 #initialize pygame
 pygame.init()
@@ -169,47 +170,108 @@ pygame.mouse.set_cursor((8,8),(0,0),(0,0,0,0,0,0,0,0),(0,0,0,0,0,0,0,0))    #mak
 #initialize pygames camera library
 pygame.camera.init()
 camera = pygame.camera.Camera('/dev/video0', size)
+#camera.set_controls(hflip=True)
 camera.start()
 
 #create vaious variables
 mouse = pygame.Rect(0, 0, 2, 2)
 click = False
+dblClick = False
 bckg = (255,255,255)
 mode = 'menu'
+swiping = False
+lastPos = 0
+changex = -size[0]/6.6
+swipeThreshhold = 6.6
+
+#initialize clock
+clock = pygame.time.Clock()
+timer = 0
+dt = 0
 
 #definition of UI componetns 
-btn2 = button(getCenterPos((300,100), size), (300,100), ("images/buttons/redN.png","images/buttons/redP.png","images/buttons/redP.png"),("TOUCH", (255,255,255),50,""), cam)
+btn1 = button(getCenterPos((300,100), size), (300,100), ("images/buttons/redN.png","images/buttons/redP.png","images/buttons/redP.png"),("TOUCH", (255,255,255),50,""))
+swipeBtn1 = button((size[0]-80,0), (80,size[1]), ((255,255,0,0),(255,255,0,0),(255,255,0,0)), ("",(0,0,0,0), 1, ""),swipe)
 
 def menu(disp):
-    a,b = btn2.loop(click)
-    disp.blit(a,b)
+    disp.fill(bckg)
+    #,b = btn1.loop(click)
+    #disp.blit(a,b)
+
+    global swiping
+    global mode
+
+    if swiping:
+        font = pygame.font.SysFont("", 20)
+        text = font.render(str(lastPos) + ', ' + str(swiping) + str(mouse.center), True, (0,0,0))
+        disp.blit(text, (0,0))
+
+        global lastPos
+        x,y = swipeBtn1.pos
+        tx = mouse.center[0]
+
+        swipeBtn1.pos = (x + tx-lastPos, y)
+        lastPos = tx
+
+        if swipeBtn1.pos[0] + swipeBtn1.size[0] > size[0]:
+            swipeBtn1.pos = (size[0]- swipeBtn1.size[0], swipeBtn1.pos[1])
+
+        if not click and changex == -size[0]/swipeThreshhold:
+            swiping = False
+
+    elif swipeBtn1.pos[0] + swipeBtn1.size[0] != size[0]:
+        amntFromZ = (swipeBtn1.pos[0] + swipeBtn1.size[0] - size[0]) * -1
+        x,y = swipeBtn1.pos
+        swipeBtn1.pos = (x+30, y)
+        if amntFromZ < 20 and amntFromZ:
+            swipeBtn1.pos = (size[0] - swipeBtn1.size[0], y)
+        if changex == -size[0]/swipeThreshhold:
+            mode = "menu"
+            
+
+
+    
+    swipeBtn1.loop(click)
+
+
     return disp
 
 def cam(disp):
     #get camera image
-        disp = camera.get_image()
-        cameraSize = camera.get_size()
+    disp.fill(bckg)
+    disp = camera.get_image()
+    cameraSize = camera.get_size()
 
-        #if camera does not fit on the display resize it
-        if cameraSize != size:
-            if cameraSize[0] != size[0]:
-                x = size[0]/cameraSize[0]
-                y = cameraSize[1] * x
-                x = size[0]
-            else:
-                y = size[1]/cameraSize[1]
-                x = size[0] * y
-                y = size[1]
-            
-            #rescale surface and add it to display to avoid mismatch in surface sizes
-            s = pygame.Surface((x,y))
-            s = pygame.transform.scale(disp,(x,y))
-            disp = pygame.Surface(size)
-            disp.blit(s, (0,0))
-        return disp
+    #if camera does not fit on the display resize it
+    if cameraSize != size:
+        if cameraSize[0] != size[0]:
+            x = size[0]/cameraSize[0]
+            y = cameraSize[1] * x
+            x = size[0]
+        else:
+            y = size[1]/cameraSize[1]
+            x = size[0] * y
+            y = size[1]
+        
+        #rescale surface and add it to display to avoid mismatch in surface sizes
+        s = pygame.Surface((x,y))
+        s = pygame.transform.scale(disp,(x,y))
+        disp = pygame.Surface(size)
+        disp.blit(s, (0,0))
+    disp = pygame.transform.flip(disp, True, False)
+
+    return disp
 
 #main loop
 while True:
+    dt = 0.1#clock.tick() / 1000
+    if timer != 0:
+        print("going", timer, dt)
+        timer += dt
+        if timer >= 0.7:
+            timer = 0
+            dblClick = False
+
     #gets game events
     for event in pygame.event.get():
         #exit handlers
@@ -220,19 +282,58 @@ while True:
         #detect mouse press (pygame.mouse.get_pressed does not work with touch screen devices)
         elif event.type == pygame.MOUSEBUTTONDOWN:
             click = True
-            mouse.center = event.pos
+
+            if timer == 0:
+                timer = 0.001
+            elif timer < 0.7:
+                dblClick = True
+
         elif event.type == pygame.MOUSEBUTTONUP:
             click = False
 
+    if click:
+        mouse.center = pygame.mouse.get_pos()
+
     #main menu screen
     if mode == 'menu':
-        display = menu(display)
-    
+        display = menu(pygame.Surface(size))
+
+    if mode == "swipe":
+        disp1 = menu(pygame.Surface(size))
+        disp2 = cam(pygame.Surface(size))
+        display = pygame.Surface(size)
+        display.blit(disp2,(0,0))
+
+        x = swipeBtn1.pos[0]
+        w = swipeBtn1.size[0]
+        x = -(size[0]-(x+w))
+
+        if -x > size[0]/swipeThreshhold:
+            changex -= 60
+            display.blit(disp1, (changex, 0))
+            if -changex >= size[0]:
+                mode = "cam"
+                changex = -size[0]/swipeThreshhold
+                swiping = False
+                lastPos = 0
+
+        else:
+            display.blit(disp1, (x,0))
+
+        font = pygame.font.SysFont("", 20)
+        text = font.render(str(x) + ', ' + str(changex) + ', ' + str(swiping), True, (0,0,0))
+        display.blit(text, (0,0))
+
     #camera screen
     elif mode == "cam":
-        display = cam(display)
+        display = cam(pygame.Surface(size))
 
+        font = pygame.font.SysFont("", 20)
+        text = font.render(str(dblClick) + ', ' + str(click) + ', ' + str(timer), True, (255,255,255))
+        display.blit(text, (0,0))
+
+        if dblClick:
+            mode = 'menu'
 
     screen.blit(display, (0,0))
-    pygame.display.flip()
-    display.fill(bckg)
+    pygame.display.flip() 
