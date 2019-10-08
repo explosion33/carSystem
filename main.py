@@ -186,9 +186,11 @@ def swipe(btn, swiping, lastPos, mouse):
     elif x + w != size[0]:
         moving = True
         amntFromZ = -(x + w - size[0])
-        btn.pos = (x+30, 0)
+        chng = amntFromZ/5
+        if chng < 1: chng = 1
+        btn.pos = (x+chng, 0)
 
-        if amntFromZ < 20 and amntFromZ:
+        if amntFromZ < 1:
             btn.pos = (size[0] - w, 0)
 
     return swiping, lastPos, btn, x, moving
