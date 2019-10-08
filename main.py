@@ -151,12 +151,49 @@ def getCenterPos(dimensions, screenSize):
     center = (screenSize[0]/2-dimensions[0]/2,screenSize[1]/2-dimensions[1]/2)
     return center
 
-def swipe():
-    global swiping
-    global lastPos
-    swiping = True
+def initSwipe():
+    global swipe1Data
+    swipe1Data = [swipe1Data[0] ,True, mouse.centerx]
 
-    lastPos = mouse.centerx
+def swipe(btn, swiping, lastPos, mouse):
+    """
+    swipe(btn,swiping,lastPos,mouse): handles logic for draging a screen\n
+    btn     : The button object (class Button) that will be tracked throughout the swipe\n
+    swiping : A variable to determine whether. Kept track of between frames. Needs to be updated dynamicaly\n
+    lastPos : the dynamic variable to keep track of distance moved between frames\n
+    mouse   : the mouse Rect where the mouse is\n
+    returns: swiping, lastPos, btn, x (x value of btn), moving (whether or not the screen is in a transition state)
+    """
+    moving = False
+
+    x,y = btn.pos
+    w,h = btn.size
+
+    if swiping:
+        moving = True
+        tx = mouse.center[0]
+
+        btn.pos = (x + tx-lastPos, 0)
+        lastPos = tx
+
+        if x + w > size[0]:
+            btn.pos = (size[0]- w, 0)
+
+        if not click and changex == -size[0]/swipeThreshhold:
+            swiping = False
+            lastPos = 0
+
+    elif x + w != size[0]:
+        moving = True
+        amntFromZ = -(x + w - size[0])
+        btn.pos = (x+30, 0)
+
+        if amntFromZ < 20 and amntFromZ:
+            btn.pos = (size[0] - w, 0)
+
+    return swiping, lastPos, btn, x, moving
+
+    
 
 #initialize pygame
 pygame.init()
@@ -177,8 +214,6 @@ click = False
 dblClick = False
 bckg = (255,255,255)
 mode = 'menu'
-swiping = False
-lastPos = 0
 changex = -size[0]/6.6
 swipeThreshhold = 6.6
 debug = ""
@@ -188,9 +223,12 @@ clock = pygame.time.Clock()
 timer = 0
 dt = 0
 
-#definition of UI componetns 
-btn1 = button(getCenterPos((300,100), size), (300,100), ("images/buttons/redN.png","images/buttons/redP.png","images/buttons/redP.png"),("TOUCH", (255,255,255),50,""))
-swipeBtn1 = button((size[0]-80,0), (80,size[1]), ((255,255,0),(255,255,0),(255,255,0)), ("",(0,0,0,0), 1, ""),swipe)
+#definition of UI componetns
+#buttons
+btn1 = button(getCenterPos((300,100), size), (300,100), ("images/buttons/redN.png","images/buttons/redP.png","images/buttons/redP.png"),("TOUCH", (255,255,255),50,""))\
+#swipeBtns
+swipeBtn1 = button((size[0]-80,0), (80,size[1]), ((255,255,0),(255,255,0),(255,128,0)), ("",(0,0,0,0), 1, ""), initSwipe)
+swipe1Data = [swipeBtn1, False, 0]
 
 font = pygame.font.SysFont("", 20)
 
@@ -200,44 +238,19 @@ def menu(disp):
 
     disp.fill(bckg)
 
-    global swiping
-    global mode
+    global swipeBtn1
+    global swipe1Data
 
-    x,y = swipeBtn1.pos
-    w,h = swipeBtn1.size
+    swiping, lastPos, swipeBtn1, x, moving = swipe(swipe1Data[0], swipe1Data[1], swipe1Data[2], mouse)
 
-    moving = False
+    swipe1Data = [swipeBtn1, swiping, lastPos]
 
-    if swiping:
-        moving = True
-        global lastPos
-        tx = mouse.center[0]
+    w,h = swipe1Data[0].size
 
-        swipeBtn1.pos = (x + tx-lastPos, 0)
-        lastPos = tx
 
-        if x + w > size[0]:
-            swipeBtn1.pos = (size[0]- w, 0)
-
-        if not click and changex == -size[0]/swipeThreshhold:
-            swiping = False
-            lastPos = 0
-
-    elif x + w != size[0]:
-        moving = True
-        amntFromZ = -(x + w - size[0])
-        swipeBtn1.pos = (x+30, 0)
-
-        if amntFromZ < 20 and amntFromZ:
-            swipeBtn1.pos = (size[0] - w, 0)
-        #if changex == -size[0]/swipeThreshhold:
-        #    mode = "menu"
-    
     global debug
 
     if moving:
-    
-
         disp2 = cam(pygame.Surface(size))
         disp3 = pygame.Surface(size)
         disp3.blit(disp2,(0,0))
@@ -250,8 +263,8 @@ def menu(disp):
         disp3.blit(disp, (x,0))
         disp = disp3
 
-    a,b = swipeBtn1.loop(click)
-    disp.blit(a,b)
+    a,b = swipe1Data[0].loop(click)
+    #disp.blit(a,b)
 
     return disp
 
@@ -328,7 +341,7 @@ while True:
         if dblClick:
             mode = 'menu'
 
-    debug += str(mode) + str(swiping) + str(swipeBtn1.pos)
+    debug += str(mode) + str(swipe1Data) + str(swipeBtn1.pos)
 
     text = font.render(debug, True, (0,0,0))
     display.blit(text, (0,0))
