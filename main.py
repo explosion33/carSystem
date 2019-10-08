@@ -179,7 +179,7 @@ def swipe(btn, swiping, lastPos, mouse):
         if x + w > size[0]:
             btn.pos = (size[0]- w, 0)
 
-        if not click and changex == -size[0]/swipeThreshhold:
+        if not click:
             swiping = False
             lastPos = 0
 
@@ -216,8 +216,9 @@ click = False
 dblClick = False
 bckg = (255,255,255)
 mode = 'menu'
-changex = -size[0]/6.6
-swipeThreshhold = 6.6
+changex = 0
+swipeThreshhold = 4.44
+changing = False
 debug = ""
 
 #initialize clock
@@ -242,15 +243,35 @@ def menu(disp):
 
     global swipeBtn1
     global swipe1Data
-
-    swiping, lastPos, swipeBtn1, x, moving = swipe(swipe1Data[0], swipe1Data[1], swipe1Data[2], mouse)
-
-    swipe1Data = [swipeBtn1, swiping, lastPos]
-
-    w,h = swipe1Data[0].size
-
-
     global debug
+    global changing
+    global changex
+    global mode
+
+    a,b = swipe1Data[0].loop(click)
+    w,h = swipe1Data[0].size
+    
+    if not changing:
+        swiping, lastPos, swipeBtn1, x, moving = swipe(swipe1Data[0], swipe1Data[1], swipe1Data[2], mouse)
+        swipe1Data = [swipeBtn1, swiping, lastPos]
+
+        if x < size[0]-(size[0]/swipeThreshhold) and not click and not changing:
+            changex = x
+            changing = True
+
+    if changing:
+        moving = True
+        changex -= 60
+        x = changex
+        if x < 0:
+            print("Switching to cam")
+            mode = "cam"
+            b = swipe1Data[0]
+            b.pos = (size[0]-swipe1Data[0].size[0], 0)
+            swipe1Data = [b, False, 0]
+            changing = False
+
+
 
     if moving:
         disp2 = cam(pygame.Surface(size))
@@ -265,7 +286,7 @@ def menu(disp):
         disp3.blit(disp, (x,0))
         disp = disp3
 
-    a,b = swipe1Data[0].loop(click)
+
     #disp.blit(a,b)
 
     return disp
@@ -300,7 +321,6 @@ def cam(disp):
 while True:
     dt = 0.1#clock.tick() / 1000
     if timer != 0:
-        print("going", timer, dt)
         timer += dt
         if timer >= 0.7:
             timer = 0
@@ -343,7 +363,7 @@ while True:
         if dblClick:
             mode = 'menu'
 
-    debug += str(mode) + str(swipe1Data) + str(swipeBtn1.pos)
+    debug += str(mode) + str(swipe1Data[1]) + str(swipeBtn1.pos) + str(changing) + str(size[0]/swipeThreshhold)
 
     text = font.render(debug, True, (0,0,0))
     display.blit(text, (0,0))
