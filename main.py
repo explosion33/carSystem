@@ -154,11 +154,9 @@ def getCenterPos(dimensions, screenSize):
 def swipe():
     global swiping
     global lastPos
-    global mode
     swiping = True
 
     lastPos = mouse.centerx
-    mode = "swipe"
 
 #initialize pygame
 pygame.init()
@@ -183,6 +181,7 @@ swiping = False
 lastPos = 0
 changex = -size[0]/6.6
 swipeThreshhold = 6.6
+debug = ""
 
 #initialize clock
 clock = pygame.time.Clock()
@@ -191,48 +190,68 @@ dt = 0
 
 #definition of UI componetns 
 btn1 = button(getCenterPos((300,100), size), (300,100), ("images/buttons/redN.png","images/buttons/redP.png","images/buttons/redP.png"),("TOUCH", (255,255,255),50,""))
-swipeBtn1 = button((size[0]-80,0), (80,size[1]), ((255,255,0,0),(255,255,0,0),(255,255,0,0)), ("",(0,0,0,0), 1, ""),swipe)
+swipeBtn1 = button((size[0]-80,0), (80,size[1]), ((255,255,0),(255,255,0),(255,255,0)), ("",(0,0,0,0), 1, ""),swipe)
+
+font = pygame.font.SysFont("", 20)
 
 def menu(disp):
+
+    
+
     disp.fill(bckg)
-    #,b = btn1.loop(click)
-    #disp.blit(a,b)
 
     global swiping
     global mode
 
-    if swiping:
-        font = pygame.font.SysFont("", 20)
-        text = font.render(str(lastPos) + ', ' + str(swiping) + str(mouse.center), True, (0,0,0))
-        disp.blit(text, (0,0))
+    x,y = swipeBtn1.pos
+    w,h = swipeBtn1.size
 
+    moving = False
+
+    if swiping:
+        moving = True
         global lastPos
-        x,y = swipeBtn1.pos
         tx = mouse.center[0]
 
-        swipeBtn1.pos = (x + tx-lastPos, y)
+        swipeBtn1.pos = (x + tx-lastPos, 0)
         lastPos = tx
 
-        if swipeBtn1.pos[0] + swipeBtn1.size[0] > size[0]:
-            swipeBtn1.pos = (size[0]- swipeBtn1.size[0], swipeBtn1.pos[1])
+        if x + w > size[0]:
+            swipeBtn1.pos = (size[0]- w, 0)
 
         if not click and changex == -size[0]/swipeThreshhold:
             swiping = False
+            lastPos = 0
 
-    elif swipeBtn1.pos[0] + swipeBtn1.size[0] != size[0]:
-        amntFromZ = (swipeBtn1.pos[0] + swipeBtn1.size[0] - size[0]) * -1
-        x,y = swipeBtn1.pos
-        swipeBtn1.pos = (x+30, y)
+    elif x + w != size[0]:
+        moving = True
+        amntFromZ = -(x + w - size[0])
+        swipeBtn1.pos = (x+30, 0)
+
         if amntFromZ < 20 and amntFromZ:
-            swipeBtn1.pos = (size[0] - swipeBtn1.size[0], y)
-        if changex == -size[0]/swipeThreshhold:
-            mode = "menu"
-            
-
-
+            swipeBtn1.pos = (size[0] - w, 0)
+        #if changex == -size[0]/swipeThreshhold:
+        #    mode = "menu"
     
-    swipeBtn1.loop(click)
+    global debug
 
+    if moving:
+    
+
+        disp2 = cam(pygame.Surface(size))
+        disp3 = pygame.Surface(size)
+        disp3.blit(disp2,(0,0))
+
+        x = -(size[0]-(x+w))
+        if x > 0: x = 0
+
+        debug += str(x)
+
+        disp3.blit(disp, (x,0))
+        disp = disp3
+
+    a,b = swipeBtn1.loop(click)
+    disp.blit(a,b)
 
     return disp
 
@@ -298,32 +317,6 @@ while True:
     if mode == 'menu':
         display = menu(pygame.Surface(size))
 
-    if mode == "swipe":
-        disp1 = menu(pygame.Surface(size))
-        disp2 = cam(pygame.Surface(size))
-        display = pygame.Surface(size)
-        display.blit(disp2,(0,0))
-
-        x = swipeBtn1.pos[0]
-        w = swipeBtn1.size[0]
-        x = -(size[0]-(x+w))
-
-        if -x > size[0]/swipeThreshhold:
-            changex -= 60
-            display.blit(disp1, (changex, 0))
-            if -changex >= size[0]:
-                mode = "cam"
-                changex = -size[0]/swipeThreshhold
-                swiping = False
-                lastPos = 0
-
-        else:
-            display.blit(disp1, (x,0))
-
-        font = pygame.font.SysFont("", 20)
-        text = font.render(str(x) + ', ' + str(changex) + ', ' + str(swiping), True, (0,0,0))
-        display.blit(text, (0,0))
-
     #camera screen
     elif mode == "cam":
         display = cam(pygame.Surface(size))
@@ -334,6 +327,12 @@ while True:
 
         if dblClick:
             mode = 'menu'
+
+    debug += str(mode) + str(swiping) + str(swipeBtn1.pos)
+
+    text = font.render(debug, True, (0,0,0))
+    display.blit(text, (0,0))
+    debug = ""
 
     screen.blit(display, (0,0))
     pygame.display.flip() 
