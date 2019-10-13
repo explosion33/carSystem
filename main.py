@@ -247,6 +247,7 @@ click = False
 dblClick = False
 bckg = (255,255,255)
 mode = 'menu'
+subMenu = "main"
 changex = 0
 swipeThreshhold = 4.44
 changing = False
@@ -259,7 +260,8 @@ dt = 0
 
 #definition of UI componetns
 #buttons
-btn1 = button(getCenterPos((300,100), size), (300,100), ("images/buttons/redN.png","images/buttons/redP.png","images/buttons/redP.png"),("TOUCH", (255,255,255),50,""))\
+btn1 = button(getCenterPos((300,100), size), (300,100), ("images/buttons/redN.png","images/buttons/redP.png","images/buttons/redP.png"),("TOUCH", (255,255,255),50,""))
+
 #swipeBtns
 swipeBtn1 = button((size[0]-80,0), (80,size[1]), ((255,255,0),(255,255,0),(255,128,0)), ("",(0,0,0,0), 1, ""), initSwipe)
 swipe1Data = [swipeBtn1, False, 0]
@@ -272,9 +274,10 @@ font = pygame.font.SysFont("", 20)
 def menu(disp):
 
     
-
+    #default menu display
     disp.fill(bckg)
 
+    #changing to rear-view camera
     global swipe1Data
     global changing
     global changex
@@ -318,6 +321,8 @@ def menu(disp):
 
         #disp.blit(a,b)
 
+
+    #return final display
     return disp
 
 def cam(disp):
@@ -377,11 +382,11 @@ def cam(disp):
         if moving:
             disp2 = menu(pygame.Surface(size))
             disp3 = pygame.Surface(size)
-            disp3.blit(disp2,(0,0))
+            disp3.blit(disp,(0,0))
 
             if x < 0: x = 0
 
-            disp3.blit(disp, (x,0))
+            disp3.blit(disp2, (x-size[0],0))
             disp = disp3
 
         
