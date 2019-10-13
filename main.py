@@ -155,47 +155,78 @@ def initSwipe():
     global swipe1Data
     swipe1Data = [swipe1Data[0] ,True, mouse.centerx]
 
-def swipe(btn, swiping, lastPos, mouse):
+def initSwipe2():
+    global swipe2Data
+    swipe2Data = [swipe2Data[0] ,True, mouse.centerx]
+
+
+def swipe(btn, swiping, lastPos, mouse, direction="left"):
     """
     swipe(btn,swiping,lastPos,mouse): handles logic for draging a screen\n
-    btn     : The button object (class Button) that will be tracked throughout the swipe\n
-    swiping : A variable to determine whether. Kept track of between frames. Needs to be updated dynamicaly\n
-    lastPos : the dynamic variable to keep track of distance moved between frames\n
-    mouse   : the mouse Rect where the mouse is\n
-    returns: swiping, lastPos, btn, x (x value of btn), moving (whether or not the screen is in a transition state)
+    btn       : The button object (class Button) that will be tracked throughout the swipe\n
+    swiping   : A variable to determine whether. Kept track of between frames. Needs to be updated dynamicaly\n
+    lastPos   : the dynamic variable to keep track of distance moved between frames\n
+    mouse     : the mouse Rect where the mouse is\n
+    returns   : swiping, lastPos, btn, x (x value of btn), moving (whether or not the screen is in a transition state)
+    direction : determines the direction the swipe will be moving
     """
     moving = False
 
     x,y = btn.pos
     w,h = btn.size
+    if direction == "left":
+        if swiping:
+            moving = True
+            tx = mouse.center[0]
 
-    if swiping:
-        moving = True
-        tx = mouse.center[0]
+            btn.pos = (x + tx-lastPos, 0)
+            lastPos = tx
 
-        btn.pos = (x + tx-lastPos, 0)
-        lastPos = tx
+            if x + w > size[0]:
+                btn.pos = (size[0]- w, 0)
 
-        if x + w > size[0]:
-            btn.pos = (size[0]- w, 0)
+            if not click:
+                swiping = False
+                lastPos = 0
 
-        if not click:
-            swiping = False
-            lastPos = 0
+        elif x + w != size[0]:
+            moving = True
+            amntFromZ = -(x + w - size[0])
+            chng = amntFromZ/5
+            if chng < 1: chng = 1
+            btn.pos = (x+chng, 0)
 
-    elif x + w != size[0]:
-        moving = True
-        amntFromZ = -(x + w - size[0])
-        chng = amntFromZ/5
-        if chng < 1: chng = 1
-        btn.pos = (x+chng, 0)
+            if amntFromZ < 1:
+                btn.pos = (size[0] - w, 0)
 
-        if amntFromZ < 1:
-            btn.pos = (size[0] - w, 0)
+    elif direction == "right":
+        if swiping:
+            moving = True
+            tx = mouse.center[0]
+
+            btn.pos = (x + tx-lastPos, 0)
+            lastPos = tx
+
+            if x < 0:
+                btn.pos = (0, 0)
+
+            if not click:
+                swiping = False
+                lastPos = 0
+
+        elif x != 0:
+            moving = True
+            amntFromZ = x
+            chng = amntFromZ/5
+            if chng < 1: chng = 1
+            btn.pos = (x-chng, 0)
+
+            if amntFromZ < 1:
+                btn.pos = (0, 0)
+
 
     return swiping, lastPos, btn, x, moving
 
-    
 
 #initialize pygame
 pygame.init()
@@ -233,6 +264,9 @@ btn1 = button(getCenterPos((300,100), size), (300,100), ("images/buttons/redN.pn
 swipeBtn1 = button((size[0]-80,0), (80,size[1]), ((255,255,0),(255,255,0),(255,128,0)), ("",(0,0,0,0), 1, ""), initSwipe)
 swipe1Data = [swipeBtn1, False, 0]
 
+swipeBtn2 = button((0,0), (80,size[1]), ((255,255,0),(255,255,0),(255,128,0)), ("",(0,0,0,0), 1, ""), initSwipe2)
+swipe2Data = [swipeBtn2, False, 0]
+
 font = pygame.font.SysFont("", 20)
 
 def menu(disp):
@@ -241,9 +275,7 @@ def menu(disp):
 
     disp.fill(bckg)
 
-    global swipeBtn1
     global swipe1Data
-    global debug
     global changing
     global changex
     global mode
@@ -251,43 +283,40 @@ def menu(disp):
     a,b = swipe1Data[0].loop(click)
     w,h = swipe1Data[0].size
     
-    if not changing:
-        swiping, lastPos, swipeBtn1, x, moving = swipe(swipe1Data[0], swipe1Data[1], swipe1Data[2], mouse)
-        swipe1Data = [swipeBtn1, swiping, lastPos]
+    if mode == "menu":
+        if not changing:
+            swiping, lastPos, swipeBtn1, x, moving = swipe(swipe1Data[0], swipe1Data[1], swipe1Data[2], mouse)
+            swipe1Data = [swipeBtn1, swiping, lastPos]
 
-        if x < size[0]-(size[0]/swipeThreshhold) and not click and not changing:
-            changex = x
-            changing = True
+            if x < size[0]-(size[0]/swipeThreshhold) and not click and not changing:
+                changex = x
+                changing = True
 
-    if changing:
-        moving = True
-        changex -= 60
-        x = changex
-        if x < 0:
-            print("Switching to cam")
-            mode = "cam"
-            b = swipe1Data[0]
-            b.pos = (size[0]-swipe1Data[0].size[0], 0)
-            swipe1Data = [b, False, 0]
-            changing = False
+        if changing:
+            moving = True
+            changex -= 60
+            x = changex
+            if x < 0:
+                print("Switching to cam")
+                mode = "cam"
+                b = swipe1Data[0]
+                b.pos = (size[0]-swipe1Data[0].size[0], 0)
+                swipe1Data = [b, False, 0]
+                changing = False
 
+        if moving:
+            disp2 = cam(pygame.Surface(size))
+            disp3 = pygame.Surface(size)
+            disp3.blit(disp2,(0,0))
 
+            x = -(size[0]-(x+w))
+            if x > 0: x = 0
 
-    if moving:
-        disp2 = cam(pygame.Surface(size))
-        disp3 = pygame.Surface(size)
-        disp3.blit(disp2,(0,0))
-
-        x = -(size[0]-(x+w))
-        if x > 0: x = 0
-
-        debug += str(x)
-
-        disp3.blit(disp, (x,0))
-        disp = disp3
+            disp3.blit(disp, (x,0))
+            disp = disp3
 
 
-    #disp.blit(a,b)
+        #disp.blit(a,b)
 
     return disp
 
@@ -314,6 +343,49 @@ def cam(disp):
         disp = pygame.Surface(size)
         disp.blit(s, (0,0))
     disp = pygame.transform.flip(disp, True, False)
+
+    global swipe2Data
+    global changing
+    global changex
+    global mode
+
+    a,b = swipe2Data[0].loop(click)
+    w,h = swipe2Data[0].size
+    
+    if mode == "cam":
+        if not changing:
+            swiping, lastPos, swipeBtn1, x, moving = swipe(swipe2Data[0], swipe2Data[1], swipe2Data[2], mouse, "right")
+            swipe2Data = [swipeBtn1, swiping, lastPos]
+
+            if x > (size[0]/swipeThreshhold) and not click and not changing:
+                changex = x
+                changing = True
+
+        if changing:
+            moving = True
+            changex += 60
+            x = changex
+            if x > size[0]-w:
+                print("Switching to menu")
+                mode = "menu"
+                b = swipe2Data[0]
+                b.pos = (0, 0)
+                swipe2Data = [b, False, 0]
+                b = (0,0)
+                changing = False
+
+        if moving:
+            disp2 = menu(pygame.Surface(size))
+            disp3 = pygame.Surface(size)
+            disp3.blit(disp2,(0,0))
+
+            if x < 0: x = 0
+
+            disp3.blit(disp, (x,0))
+            disp = disp3
+
+        
+        #disp.blit(a,b)
 
     return disp
 
@@ -360,8 +432,6 @@ while True:
         text = font.render(str(dblClick) + ', ' + str(click) + ', ' + str(timer), True, (255,255,255))
         display.blit(text, (0,0))
 
-        if dblClick:
-            mode = 'menu'
 
     debug += str(mode) + str(swipe1Data[1]) + str(swipeBtn1.pos) + str(changing) + str(size[0]/swipeThreshhold)
 
