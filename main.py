@@ -492,7 +492,7 @@ def addDebug(*args):
     """
     global debug
     for i in args:
-        debug += i
+        debug += str(i)
         debug += ", "
 
 def getInfo(path):
@@ -510,7 +510,9 @@ def getInfo(path):
         "Trusted": None,
     }
     keys = list(out.keys())
-    info = open(path,"r")
+    info = open(path,"w").close()
+    os.system("bash bin/deviceInfo.sh")
+    info = open(path, "r")
     for line in info:
         if "Device" in line:
             x = line[7:24]
@@ -532,6 +534,32 @@ def getInfo(path):
     info.close()
     return out
 
+def addTimer(name, ms):
+    """
+    addTimer(name,ms): adds a timer to be tracked\n
+    name : str, name of timer. Using an already existing name will update the timer with a new time\n
+    ms   : int, the number of milliseconds the timer will be active for (1000ms = 1s)
+    """
+    global timers
+    timers[name] = ms
+
+def countTimers(dt):
+    """
+    countTimers(dt): counts down all timers\n
+    dt : the time in millseconds between tick
+    returns a list of any finished timers
+    """
+    global timers
+    endTimers = []
+    for key, value in timers.items():
+        timers[key] = value - dt
+        if timers[key] <= 0:
+            endTimers.append(key)
+    for key in endTimers:
+        del timers[key]
+    return endTimers
+
+
 #initialize pygame
 pygame.init()
 size = (800,480)
@@ -548,7 +576,6 @@ camera.start()
 #create vaious variables
 mouse = pygame.Rect(0, 0, 2, 2)         #mouse rectangle for collison
 click = False                           #stores state of mouse click
-dblClick = False                        #stores state of a double click action
 bckg = (24,30,39)                       #bckg color
 mode = 'menu'                           #current mode
 subMenu = "main"                        #current submenu of menu mode
@@ -567,7 +594,7 @@ deviceInfo = getInfo("bin/info.txt")    #bluetooth device info
 
 #initialize clock
 clock = pygame.time.Clock()
-timer = 0
+timers = {}
 dt = 0
 
 #definition of UI componetns
@@ -784,12 +811,21 @@ def cam(disp):
 
 #main loop
 while True:
-    dt = 0.1#clock.tick() / 1000
-    if timer != 0:
-        timer += dt
-        if timer >= 0.7:
-            timer = 0
-            dblClick = False
+    dt = clock.tick()
+    k = countTimers(dt)
+    addDebug(deviceInfo["Name"])
+    if "Refresh" not in list(timers.keys()):
+        addTimer("Refresh", 1000)
+    if "Refresh" in k:
+            deviceInfo = getInfo("bin/info.txt")
+            print("GOT INFO")
+            deviceText = ""
+            if deviceInfo["MAC"]:
+                if deviceInfo["Alias"]:
+                    deviceText += deviceInfo["Alias"]
+                else:
+                    deviceText += deviceInfo["Name"]
+
 
     #gets game events
     for event in pygame.event.get():
@@ -801,11 +837,6 @@ while True:
         #detect mouse press (pygame.mouse.get_pressed does not work with touch screen devices)
         elif event.type == pygame.MOUSEBUTTONDOWN:
             click = True
-
-            if timer == 0:
-                timer = 0.001
-            elif timer < 0.7:
-                dblClick = True
 
         elif event.type == pygame.MOUSEBUTTONUP:
             click = False
@@ -826,12 +857,8 @@ while True:
     elif mode == "cam":
         display = cam(pygame.Surface(size))
 
-        font = pygame.font.SysFont("", 20)
-        text = font.render(str(dblClick) + ', ' + str(click) + ', ' + str(timer), True, (255,255,255))
-        display.blit(text, (0,0))
 
-
-    addDebug(str(volume), str(volumeSlider.xoffset), str(volumeSlider.value) + str(audioPause.state))
+    addDebug(str(volume), str(volumeSlider.xoffset), str(volumeSlider.value), str(audioPause.state), str(timers), deviceText)
 
     text = debugFont.render(debug, True, (0,255,0))
     display.blit(text, (0,0))
