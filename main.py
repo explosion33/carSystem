@@ -332,10 +332,16 @@ def getCenterPos(dimensions, screenSize):
     return center
 
 def initSwipe():
+    """
+    initialize the swiping process
+    """
     global swipe1Data
     swipe1Data = [swipe1Data[0] ,True, mouse.centerx]
 
 def initSwipe2():
+    """
+    initialize the swiping process for the second swiping button
+    """
     global swipe2Data
     swipe2Data = [swipe2Data[0] ,True, mouse.centerx]
 
@@ -377,7 +383,6 @@ def AAfilledRoundedRect(surface,rect,color,radius=0.4):
         rectangle.fill((255,255,255,alpha),special_flags=pygame.BLEND_RGBA_MIN)
         
         return surface.blit(rectangle,pos)
-
 
 def swipe(btn, swiping, lastPos, mouse, direction="left"):
     """
@@ -447,6 +452,10 @@ def swipe(btn, swiping, lastPos, mouse, direction="left"):
     return swiping, lastPos, btn, x, moving
 
 def mute(cond):
+    """
+    mute(cond)\n
+    cond : True or False (True is not mute and False is Mute)
+    """
     global volume
     s = str(volume) + "%"
     if cond:
@@ -455,10 +464,18 @@ def mute(cond):
         call(["amixer", "-D", "pulse", "sset", "Master", "0%"])
 
 def chagneVolume(value):
+    """
+    changeVolume(value)\n
+    value : integer between 0 and 100
+    """
     global volume
     volume = value
 
 def play(state):
+    """
+    play(state)\n
+    state : True or False (True is Play and False is Pause)
+    """
     global deviceInfo
     device = deviceInfo["MAC"]
     if state: #play
@@ -468,12 +485,22 @@ def play(state):
         print()
 
 def addDebug(*args):
+    """
+    addDebug(*args): create a string of debug information\n
+    *args : a string or strings\n
+    returns a comma seperated string
+    """
     global debug
     for i in args:
         debug += i
         debug += ", "
 
 def getInfo(path):
+    """
+    getInfo(path): get bluetooth device info from a txt file\n
+    path : a path to a text file\n
+    returns dictionary with ["MAC", "Name", "Alias", "Icon", "Paired", "Trusted"]
+    """
     out = {
         "MAC": None,
         "Name": None,
@@ -519,19 +546,24 @@ camera = pygame.camera.Camera('/dev/video0', size)
 camera.start()
 
 #create vaious variables
-mouse = pygame.Rect(0, 0, 2, 2)
-click = False
-dblClick = False
-bckg = (24,30,39)
-mode = 'menu'
-subMenu = "main"
-changex = 0
-swipeThreshhold = 4.44
-changing = False
-debug = ""
+mouse = pygame.Rect(0, 0, 2, 2)         #mouse rectangle for collison
+click = False                           #stores state of mouse click
+dblClick = False                        #stores state of a double click action
+bckg = (24,30,39)                       #bckg color
+mode = 'menu'                           #current mode
+subMenu = "main"                        #current submenu of menu mode
+debug = ""                              #content to be displayed at topleft of screen
+debugFont = pygame.font.SysFont("", 20) #font object for the debug text
+
+#swipe detection variables
+    changex = 0
+    swipeThreshhold = 4.44
+    changing = False
+
+#system variables
 volume = 50
 lastVolume = 50
-deviceInfo = getInfo("bin/info.txt")
+deviceInfo = getInfo("bin/info.txt")    #bluetooth device info
 
 #initialize clock
 clock = pygame.time.Clock()
@@ -558,6 +590,7 @@ audioMute = toggleButton((230,420), (40,40), ("images/buttons/volumeOn.png", "im
 audioPause = toggleButton((320,140),(200,200), ("images/buttons/play.png", "images/buttons/pause.png"), ("", txtColor,30,""), play)
 volumeSlider = slider((280, 420), (320, 30), (238,238,238),("images/buttons/slide.png", "images/buttons/slidePressed.png"), [0,100], 50, chagneVolume)
 
+#get apropriate name to display as streaming device
 deviceFont = pygame.font.SysFont("", 45)
 deviceText = ""
 if deviceInfo["MAC"]:
@@ -573,9 +606,13 @@ swipe1Data = [swipeBtn1, False, 0]
 swipeBtn2 = button((0,0), (80,size[1]), ((255,255,0),(255,255,0),(255,128,0)), ("",(0,0,0,0), 1, ""), initSwipe2)
 swipe2Data = [swipeBtn2, False, 0]
 
-debugFont = pygame.font.SysFont("", 20)
 
 def menu(disp):
+    """
+    menu(disp): creates a surface with the display for the menu, handles touch detection for menu
+    disp : empty pygame display
+    returns pygame display
+    """
     global UIButtons
     global audioBorder
     global audioMute
@@ -583,36 +620,46 @@ def menu(disp):
     global audioPause
     global deviceFont
     global deviceText
+    global subMenu
 
-
-    #default menu display
     disp.fill(bckg)
 
-    disp.blit(audioBorder, (220,10))
-
-    a,b = audioMute.loop(click)
-    disp.blit(a,b)
-
-    a,b = volumeSlider.loop(click)
-    disp.blit(a,b)
-
-    a,b = audioPause.loop(click)
-    disp.blit(a,b)
+    #default menu display
+    if submenu == "main":
     
-    for btn in UIButtons:
-        a,b = btn.loop(click)
+        #audio options box
+        disp.blit(audioBorder, (220,10))
+
+        #mute button
+        a,b = audioMute.loop(click)
         disp.blit(a,b)
 
-    playerInfo = deviceFont.render(deviceText, True, (238,238,238))
-    s = playerInfo.get_size()[0]
-    while s > 380:
-        c = 1
-        if "..." in deviceText: c = 4
-        deviceText = deviceText[0:len(deviceText)-c]
-        deviceText += "..."
+        #volume slider
+        a,b = volumeSlider.loop(click)
+        disp.blit(a,b)
+        
+        #play/pasue button
+        a,b = audioPause.loop(click)
+        disp.blit(a,b)
+        
+        #misc. Left buttons (primaraly to change between submenus)
+        for btn in UIButtons:
+            a,b = btn.loop(click)
+            disp.blit(a,b)
+
+        #Name of the current connected device
+        playerInfo = deviceFont.render(deviceText, True, (238,238,238))
         s = playerInfo.get_size()[0]
-    x = 420 - (s/2)
-    disp.blit(playerInfo, (x,20))
+        
+        #if width of text is bigger than aduio panel remove a letters and add ...
+        while s > 380:
+            c = 1
+            if "..." in deviceText: c = 4
+            deviceText = deviceText[0:len(deviceText)-c]
+            deviceText += "..."
+            s = playerInfo.get_size()[0]
+        x = 420 - (s/2)
+        disp.blit(playerInfo, (x,20))
     
 
     #changing to rear-view camera
