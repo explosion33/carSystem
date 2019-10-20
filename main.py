@@ -538,11 +538,7 @@ clock = pygame.time.Clock()
 timer = 0
 dt = 0
 
-
-
 #definition of UI componetns
-font = pygame.font.SysFont("", 20)
-
 #buttons
 txtColor = (238,238,238)
 UIDevices = button((20,10), (150,60), ("images/buttons/UIBtn.png","images/buttons/UIBtnPressed.png"),("Devices", txtColor,30,""))
@@ -562,7 +558,13 @@ audioMute = toggleButton((230,420), (40,40), ("images/buttons/volumeOn.png", "im
 audioPause = toggleButton((320,140),(200,200), ("images/buttons/play.png", "images/buttons/pause.png"), ("", txtColor,30,""), play)
 volumeSlider = slider((280, 420), (320, 30), (238,238,238),("images/buttons/slide.png", "images/buttons/slidePressed.png"), [0,100], 50, chagneVolume)
 
-playerInfo = 
+deviceFont = pygame.font.SysFont("", 45)
+deviceText = ""
+if deviceInfo["MAC"]:
+    if deviceInfo["Alias"]:
+        deviceText += deviceInfo["Alias"]
+    else:
+        deviceText += deviceInfo["Name"]
 
 #swipeBtns
 swipeBtn1 = button((size[0]-80,0), (80,size[1]), ((255,255,0),(255,255,0),(255,128,0)), ("",(0,0,0,0), 1, ""), initSwipe)
@@ -571,6 +573,7 @@ swipe1Data = [swipeBtn1, False, 0]
 swipeBtn2 = button((0,0), (80,size[1]), ((255,255,0),(255,255,0),(255,128,0)), ("",(0,0,0,0), 1, ""), initSwipe2)
 swipe2Data = [swipeBtn2, False, 0]
 
+debugFont = pygame.font.SysFont("", 20)
 
 def menu(disp):
     global UIButtons
@@ -578,7 +581,10 @@ def menu(disp):
     global audioMute
     global volumeSlider
     global audioPause
-    
+    global deviceFont
+    global deviceText
+
+
     #default menu display
     disp.fill(bckg)
 
@@ -597,6 +603,16 @@ def menu(disp):
         a,b = btn.loop(click)
         disp.blit(a,b)
 
+    playerInfo = deviceFont.render(deviceText, True, (238,238,238))
+    s = playerInfo.get_size()[0]
+    while s > 380:
+        c = 1
+        if "..." in deviceText: c = 4
+        deviceText = deviceText[0:len(deviceText)-c]
+        deviceText += "..."
+        s = playerInfo.get_size()[0]
+    x = 420 - (s/2)
+    disp.blit(playerInfo, (x,20))
     
 
     #changing to rear-view camera
@@ -767,7 +783,7 @@ while True:
 
     addDebug(str(volume), str(volumeSlider.xoffset), str(volumeSlider.value) + str(audioPause.state))
 
-    text = font.render(debug, True, (0,255,0))
+    text = debugFont.render(debug, True, (0,255,0))
     display.blit(text, (0,0))
     debug = ""
 
