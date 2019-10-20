@@ -1,9 +1,10 @@
-import sys, pygame
+import sys, pygame, os
 import pygame.camera
 from pygame.locals import *
 from random import randint
 from pygame import gfxdraw
-from subprocess import call
+import subprocess
+
 
 
 class button (object):
@@ -457,11 +458,52 @@ def chagneVolume(value):
     global volume
     volume = value
 
+def play(state):
+    global deviceInfo
+    device = deviceInfo["MAC"]
+    if state: #play
+        os.system("dbus-send --system --print-reply --dest=org.bluez /org/bluez/hci0/dev_" + device +  " org.bluez.MediaControl1.Play")
+    else:
+        os.system("dbus-send --system --print-reply --dest=org.bluez /org/bluez/hci0/dev_" + device + " org.bluez.MediaControl1.Pause")
+        print()
+
 def addDebug(*args):
     global debug
     for i in args:
         debug += i
         debug += ", "
+
+def getInfo(path):
+    out = {
+        "MAC": None,
+        "Name": None,
+        "Alias": None,
+        "Icon": None,
+        "Paired": None,
+        "Trusted": None,
+    }
+    keys = list(out.keys())
+    info = open(path,"rw")
+    for line in info:
+        if "Device" in line:
+            x = line[7:24]
+            x = x.replace(":", "_")
+            out["MAC"] = x
+
+        else:
+            for key in keys:
+                if key in line:
+                    l = len(key) + 3
+                    c = 0
+                    for i in line:
+                        if i == "\\":
+                           break
+                        c += 1
+                    c -= 1
+                    out[key] = line[l:c] 
+                    
+    info.close()
+    return out
 
 #initialize pygame
 pygame.init()
@@ -489,13 +531,18 @@ changing = False
 debug = ""
 volume = 50
 lastVolume = 50
+deviceInfo = getInfo("bin/info.txt")
 
 #initialize clock
 clock = pygame.time.Clock()
 timer = 0
 dt = 0
 
+
+
 #definition of UI componetns
+font = pygame.font.SysFont("", 20)
+
 #buttons
 txtColor = (238,238,238)
 UIDevices = button((20,10), (150,60), ("images/buttons/UIBtn.png","images/buttons/UIBtnPressed.png"),("Devices", txtColor,30,""))
@@ -512,7 +559,10 @@ audioBorder.fill((0,0,0,0))
 AAfilledRoundedRect(audioBorder,audioBorder.get_rect(),(33,62,69),0.05)
 
 audioMute = toggleButton((230,420), (40,40), ("images/buttons/volumeOn.png", "images/buttons/volumeMute.png"), ("", txtColor,30,""), mute)
+audioPause = toggleButton((320,140),(200,200), ("images/buttons/play.png", "images/buttons/pause.png"), ("", txtColor,30,""), play)
 volumeSlider = slider((280, 420), (320, 30), (238,238,238),("images/buttons/slide.png", "images/buttons/slidePressed.png"), [0,100], 50, chagneVolume)
+
+playerInfo = 
 
 #swipeBtns
 swipeBtn1 = button((size[0]-80,0), (80,size[1]), ((255,255,0),(255,255,0),(255,128,0)), ("",(0,0,0,0), 1, ""), initSwipe)
@@ -521,20 +571,16 @@ swipe1Data = [swipeBtn1, False, 0]
 swipeBtn2 = button((0,0), (80,size[1]), ((255,255,0),(255,255,0),(255,128,0)), ("",(0,0,0,0), 1, ""), initSwipe2)
 swipe2Data = [swipeBtn2, False, 0]
 
-font = pygame.font.SysFont("", 20)
 
 def menu(disp):
     global UIButtons
     global audioBorder
     global audioMute
     global volumeSlider
+    global audioPause
     
     #default menu display
     disp.fill(bckg)
-    
-    for btn in UIButtons:
-        a,b = btn.loop(click)
-        disp.blit(a,b)
 
     disp.blit(audioBorder, (220,10))
 
@@ -543,6 +589,14 @@ def menu(disp):
 
     a,b = volumeSlider.loop(click)
     disp.blit(a,b)
+
+    a,b = audioPause.loop(click)
+    disp.blit(a,b)
+    
+    for btn in UIButtons:
+        a,b = btn.loop(click)
+        disp.blit(a,b)
+
     
 
     #changing to rear-view camera
@@ -695,7 +749,7 @@ while True:
 
     if audioMute.state:
         if volume != lastVolume:
-            call(["amixer", "-D", "pulse", "sset", "Master", str(volume) + "%"])
+            subprocess.call(["amixer", "-D", "pulse", "sset", "Master", str(volume) + "%"])
             lastVolume = volume
 
     #main menu screen
@@ -711,7 +765,7 @@ while True:
         display.blit(text, (0,0))
 
 
-    addDebug(str(volume), str(volumeSlider.xoffset), str(volumeSlider.value))
+    addDebug(str(volume), str(volumeSlider.xoffset), str(volumeSlider.value) + str(audioPause.state))
 
     text = font.render(debug, True, (0,255,0))
     display.blit(text, (0,0))
