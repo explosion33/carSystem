@@ -12,7 +12,7 @@ class button (object):
     button(pos,size,color,text): a button class, pretty self explanatory\n
     pos      : (x,y)\n
     size     : (w,h)\n
-    color    : (normal, hover, click) can be (r,g,b) or a path to an image\n
+    color    : (normal, click, disabled(optional)) can be (r,g,b) or a path to an image\n
     text     : (content, color, size, font)\n
     function : def (no paranthesis when passing it through)
     args     : arguments for function, functions arguments must be list, dict, or single arg
@@ -103,7 +103,18 @@ class button (object):
             self.AAfilledRoundedRect(self.surface, rect, self.color[self.useColor])
         elif self.mode == "image":
             self.surface.fill((0,0,0,0))
-            img = pygame.image.load(self.color[self.useColor])
+            
+            p = self.useColor
+            if not self.enabled:
+                if len(self.color) == 3:
+                    p = 2
+                elif len(self.color) == 4:
+                    if self.state == False:
+                        p=3
+                    else:
+                        p=2
+
+            img = pygame.image.load(self.color[p])
             img = pygame.transform.smoothscale(img, self.size)
 
             self.surface.blit(img, (0,0))
@@ -147,6 +158,22 @@ class button (object):
             self.interact(click)
         return (self.surface, self.pos)
 
+    def enable(self, enabled=True):
+        """
+        enabled(enabled=True): sets whether or not the button can be interacted with\n
+        If a third image or color is provided it will be used for the disabled state\n
+        enabled : whether or not the button is enabled (True = enabled, False = Disabled)
+        """
+        if enabled:
+            if not self.enabled:
+                self.enabled = True
+                self.draw()
+        else:
+            if self.enabled:
+                self.enabled = False
+                self.draw()
+        
+
 class toggleButton(button):
     def __init__(self, pos, size, color, text, function=None):
         button.__init__(self, pos, size, color, text, function=None, args=None)
@@ -177,6 +204,21 @@ class toggleButton(button):
                     self.function(self.state)
         if not click:
             self.oneClick = True
+    
+    def enable(self, enabled=True):
+        """
+        enabled(enabled=True): sets whether or not the button can be interacted with\n
+        If a third or fourth image or color is provided it will be used for the disabled state\n
+        enabled : whether or not the button is enabled (True = enabled, False = Disabled)
+        """
+        if enabled:
+            if not self.enabled:
+                self.enabled = True
+                self.draw()
+        else:
+            if self.enabled:
+                self.enabled = False
+                self.draw()
 
 class slider(object):
     """
@@ -309,9 +351,7 @@ class slider(object):
             self.value = int(self.value)
             self.percent = int(p*100)
             
-            self.function(self.value)
-
-        
+            self.function(self.value)  
     
     def loop(self, click):
         if self.enabled:
@@ -319,7 +359,20 @@ class slider(object):
 
         return (self.surface, self.pos)
 
-        
+    def enable(self, enabled=True):
+        """
+        enabled(enabled=True): sets weather or not the slider can be interacted with\n
+        If a third image or color is provided it will be used for the disabled state\n
+        enabled : whether or not the slider is enabled (True = enabled, False = Disabled)
+        """
+        if enabled:
+            if not self.enabled:
+                self.enabled = True
+                self.draw()
+        else:
+            if self.enabled:
+                self.enabled = False
+                self.draw()
         
 
 def getCenterPos(dimensions, screenSize):
@@ -614,13 +667,14 @@ audioBorder.fill((0,0,0,0))
 AAfilledRoundedRect(audioBorder,audioBorder.get_rect(),(33,62,69),0.05)
 
 audioMute = toggleButton((230,420), (40,40), ("images/buttons/volumeOn.png", "images/buttons/volumeMute.png"), ("", txtColor,30,""), mute)
-audioPause = toggleButton((320,140),(200,200), ("images/buttons/play.png", "images/buttons/pause.png"), ("", txtColor,30,""), play)
+audioPause = toggleButton((320,140),(200,200), ("images/buttons/play.png", "images/buttons/pause.png", "images/buttons/playDisabled.png", "images/buttons/pauseDisabled.png"), ("", txtColor,30,""), play)
 volumeSlider = slider((280, 420), (320, 30), (238,238,238),("images/buttons/slide.png", "images/buttons/slidePressed.png"), [0,100], 50, chagneVolume)
 
 #get apropriate name to display as streaming device
 deviceFont = pygame.font.SysFont("", 45)
-deviceText = ""
+deviceText = "No Device"
 if deviceInfo["MAC"]:
+    deviceText = ""
     if deviceInfo["Alias"]:
         deviceText += deviceInfo["Alias"]
     else:
@@ -647,6 +701,7 @@ def menu(disp):
     global audioPause
     global deviceFont
     global deviceText
+    global deviceInfo
     global subMenu
 
     disp.fill(bckg)
@@ -688,6 +743,15 @@ def menu(disp):
         x = 420 - (s/2)
         disp.blit(playerInfo, (x,20))
     
+        if not deviceInfo["MAC"]:
+            volumeSlider.enable(False)
+            audioMute.enable(False)
+            audioPause.enable(False)
+        else:
+            volumeSlider.enable()
+            audioMute.enable()
+            audioPause.enable()
+
 
     #changing to rear-view camera
     global swipe1Data
@@ -730,6 +794,15 @@ def menu(disp):
 
             disp3.blit(disp, (x,0))
             disp = disp3
+
+            volumeSlider.enable(False)
+            audioMute.enable(False)
+            audioPause.enable(False)
+            for button in UIButtons:
+                button.enable(False)
+        else:
+            for button in UIButtons:
+                button.enable()
 
 
         #disp.blit(a,b)
@@ -819,8 +892,9 @@ while True:
     if "Refresh" in k:
             deviceInfo = getInfo("bin/info.txt")
             print("GOT INFO")
-            deviceText = ""
+            deviceText = "No Device"
             if deviceInfo["MAC"]:
+                deviceText = ""
                 if deviceInfo["Alias"]:
                     deviceText += deviceInfo["Alias"]
                 else:
@@ -858,7 +932,7 @@ while True:
         display = cam(pygame.Surface(size))
 
 
-    addDebug(str(volume), str(volumeSlider.xoffset), str(volumeSlider.value), str(audioPause.state), str(timers), deviceText)
+    addDebug(str(volume), str(volumeSlider.xoffset), str(volumeSlider.value), str(audioPause.state), str(timers), deviceText, [audioPause.useColor, audioPause.state, audioPause.enabled])
 
     text = debugFont.render(debug, True, (0,255,0))
     display.blit(text, (0,0))
