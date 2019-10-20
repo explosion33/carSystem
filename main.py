@@ -459,9 +459,9 @@ def mute(cond):
     global volume
     s = str(volume) + "%"
     if cond:
-        call(["amixer", "-D", "pulse", "sset", "Master", s])
+        subprocess.call(["amixer", "-D", "pulse", "sset", "Master", s])
     else:
-        call(["amixer", "-D", "pulse", "sset", "Master", "0%"])
+        subprocess.call(["amixer", "-D", "pulse", "sset", "Master", "0%"])
 
 def chagneVolume(value):
     """
@@ -510,7 +510,7 @@ def getInfo(path):
         "Trusted": None,
     }
     keys = list(out.keys())
-    info = open(path,"rw")
+    info = open(path,"r")
     for line in info:
         if "Device" in line:
             x = line[7:24]
@@ -556,9 +556,9 @@ debug = ""                              #content to be displayed at topleft of s
 debugFont = pygame.font.SysFont("", 20) #font object for the debug text
 
 #swipe detection variables
-    changex = 0
-    swipeThreshhold = 4.44
-    changing = False
+changex = 0
+swipeThreshhold = 4.44
+changing = False
 
 #system variables
 volume = 50
@@ -625,7 +625,7 @@ def menu(disp):
     disp.fill(bckg)
 
     #default menu display
-    if submenu == "main":
+    if subMenu == "main":
     
         #audio options box
         disp.blit(audioBorder, (220,10))
@@ -650,7 +650,7 @@ def menu(disp):
         #Name of the current connected device
         playerInfo = deviceFont.render(deviceText, True, (238,238,238))
         s = playerInfo.get_size()[0]
-        
+
         #if width of text is bigger than aduio panel remove a letters and add ...
         while s > 380:
             c = 1
@@ -687,6 +687,7 @@ def menu(disp):
             if x < 0:
                 print("Switching to cam")
                 mode = "cam"
+                subMenu = "main"
                 b = swipe1Data[0]
                 b.pos = (size[0]-swipe1Data[0].size[0], 0)
                 swipe1Data = [b, False, 0]
@@ -726,6 +727,8 @@ def cam(disp):
             y = size[1]/cameraSize[1]
             x = size[0] * y
             y = size[1]
+        x = int(x)
+        y = int(y)
         
         #rescale surface and add it to display to avoid mismatch in surface sizes
         s = pygame.Surface((x,y))
