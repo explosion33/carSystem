@@ -1,0 +1,27 @@
+Agent registered
+[0;94m[EthanPhone][0m# info
+Device 18:81:0E:4B:76:67 (public)
+	Name: EthanPhone
+	Alias: EthanPhone
+	Class: 0x007a020c
+	Icon: phone
+	Paired: yes
+	Trusted: yes
+	Blocked: no
+	Connected: yes
+	LegacyPairing: no
+	UUID: Vendor specific           (00000000-deca-fade-deca-deafdecacafe)
+	UUID: Service Discovery Serve.. (00001000-0000-1000-8000-00805f9b34fb)
+	UUID: Audio Source              (0000110a-0000-1000-8000-00805f9b34fb)
+	UUID: A/V Remote Control Target (0000110c-0000-1000-8000-00805f9b34fb)
+	UUID: Advanced Audio Distribu.. (0000110d-0000-1000-8000-00805f9b34fb)
+	UUID: A/V Remote Control        (0000110e-0000-1000-8000-00805f9b34fb)
+	UUID: NAP                       (00001116-0000-1000-8000-00805f9b34fb)
+	UUID: Handsfree Audio Gateway   (0000111f-0000-1000-8000-00805f9b34fb)
+	UUID: Phonebook Access Server   (0000112f-0000-1000-8000-00805f9b34fb)
+	UUID: Message Access Server     (00001132-0000-1000-8000-00805f9b34fb)
+	UUID: PnP Information           (00001200-0000-1000-8000-00805f9b34fb)
+	UUID: Vendor specific           (02030302-1d19-415f-86f2-22a2106a0a77)
+	Modalias: bluetooth:v004Cp710Ad0C40
+[0;94m[EthanPhone][0m# exit
+[0;94m[EthanPhone][0m# [K
