@@ -25,7 +25,7 @@ class button (object):
         self.function = function
         self.args = args
         self.useColor = 0
-        self.state = [0,0] #current state, last state
+        self.state = [1,0] #current state, last state
         self.enabled = True
         self.mode = "color"
 
@@ -139,9 +139,10 @@ class button (object):
                 self.useColor = 1
                 self.draw()
                 
+                print(self.function, self.args)
                 if self.function:
                     if self.args:
-                        self.function(args)
+                        self.function(self.args)
                     else:
                         self.function()
 
@@ -587,6 +588,9 @@ def getInfo(path):
     info.close()
     return out
 
+def getLastDevices(path):
+    pass
+
 def addTimer(name, ms):
     """
     addTimer(name,ms): adds a timer to be tracked\n
@@ -612,6 +616,14 @@ def countTimers(dt):
         del timers[key]
     return endTimers
 
+def changeMenu(submenu):
+    """"
+    changeMenu(submenu): changes the submenu\n
+    submenu : string
+    """
+    global subMenu
+    subMenu = submenu
+    print("changing", submenu)
 
 #initialize pygame
 pygame.init()
@@ -643,7 +655,8 @@ changing = False
 #system variables
 volume = 50
 lastVolume = 50
-deviceInfo = getInfo("bin/info.txt")    #bluetooth device info
+deviceInfo = getInfo("bin/info.txt")            #bluetooth device info
+lastDevices = getLastDevices("bin/devices.txt") #get previously connected devices
 
 #initialize clock
 clock = pygame.time.Clock()
@@ -651,9 +664,9 @@ timers = {}
 dt = 0
 
 #definition of UI componetns
-#buttons
+#MAINMENU
 txtColor = (238,238,238)
-UIDevices = button((20,10), (150,60), ("images/buttons/UIBtn.png","images/buttons/UIBtnPressed.png"),("Devices", txtColor,30,""))
+UIDevices = button((20,10), (150,60), ("images/buttons/UIBtn.png","images/buttons/UIBtnPressed.png"),("Devices", txtColor,30,""), changeMenu, "devices")
 UICamera = button((20,90), (150,60), ("images/buttons/UIBtn.png","images/buttons/UIBtnPressed.png"),("Camera", txtColor,30,""))
 UISettings = button((20,170), (150,60), ("images/buttons/UIBtn.png","images/buttons/UIBtnPressed.png"),("Settings", txtColor,30,""))
 UIBlank = button((20,250), (150,60), ("images/buttons/UIBtn.png","images/buttons/UIBtnPressed.png"),("", txtColor,30,""))
@@ -669,6 +682,7 @@ AAfilledRoundedRect(audioBorder,audioBorder.get_rect(),(33,62,69),0.05)
 audioMute = toggleButton((230,420), (40,40), ("images/buttons/volumeOn.png", "images/buttons/volumeMute.png"), ("", txtColor,30,""), mute)
 audioPause = toggleButton((320,140),(200,200), ("images/buttons/play.png", "images/buttons/pause.png", "images/buttons/playDisabled.png", "images/buttons/pauseDisabled.png"), ("", txtColor,30,""), play)
 volumeSlider = slider((280, 420), (320, 30), (238,238,238),("images/buttons/slide.png", "images/buttons/slidePressed.png"), [0,100], 50, chagneVolume)
+AudioControls = [audioMute, audioPause, volumeSlider]
 
 #get apropriate name to display as streaming device
 deviceFont = pygame.font.SysFont("", 45)
@@ -679,6 +693,12 @@ if deviceInfo["MAC"]:
         deviceText += deviceInfo["Alias"]
     else:
         deviceText += deviceInfo["Name"]
+
+
+#DEVICES
+DEVBack = button((20,10), (150,60), ("images/buttons/UIBtn.png","images/buttons/UIBtnPressed.png"),("Back", txtColor,30,""), changeMenu, "main")
+DeviceButtons = [DEVBack]
+
 
 #swipeBtns
 swipeBtn1 = button((size[0]-80,0), (80,size[1]), ((255,255,0),(255,255,0),(255,128,0)), ("",(0,0,0,0), 1, ""), initSwipe)
@@ -694,15 +714,19 @@ def menu(disp):
     disp : empty pygame display
     returns pygame display
     """
+
+    global deviceInfo
+    
+    #Main Menu Vars
     global UIButtons
     global audioBorder
-    global audioMute
-    global volumeSlider
-    global audioPause
+    global AudioControls
     global deviceFont
     global deviceText
-    global deviceInfo
     global subMenu
+
+    #Devices vars
+    global DeviceButtons
 
     disp.fill(bckg)
 
@@ -712,17 +736,10 @@ def menu(disp):
         #audio options box
         disp.blit(audioBorder, (220,10))
 
-        #mute button
-        a,b = audioMute.loop(click)
-        disp.blit(a,b)
-
-        #volume slider
-        a,b = volumeSlider.loop(click)
-        disp.blit(a,b)
-        
-        #play/pasue button
-        a,b = audioPause.loop(click)
-        disp.blit(a,b)
+        #audio controls
+        for cont in AudioControls:
+            a,b = cont.loop(click)
+            disp.blit(a,b)
         
         #misc. Left buttons (primaraly to change between submenus)
         for btn in UIButtons:
@@ -744,13 +761,39 @@ def menu(disp):
         disp.blit(playerInfo, (x,20))
     
         if not deviceInfo["MAC"]:
-            volumeSlider.enable(False)
-            audioMute.enable(False)
-            audioPause.enable(False)
+            for cont in AudioControls:
+                cont.enable(False)
         else:
-            volumeSlider.enable()
-            audioMute.enable()
-            audioPause.enable()
+            for cont in AudioControls:
+                cont.enable()
+
+    elif subMenu == "devices":
+        for btn in DeviceButtons:
+            a,b = btn.loop(click)
+            disp.blit(a,b)
+
+        font = pygame.font.SysFont("", 30)
+        if deviceInfo["MAC"]:
+            data = deviceInfo
+
+            a = 0
+            wmax=0
+            for key in list(data.keys()):
+                k = font.render(key, True, (238,238,238))
+                disp.blit(k, (10, 80+a))
+                a += 30
+                w,h = k.get_size()
+                if w > wmax: wmax = w
+            wmax += 10
+            a=0
+            for key in list(data.keys()):
+                k = font.render(": " + str(data[key]), True, (238,238,238))
+                disp.blit(k, (wmax+10, 80+a))
+                a += 30
+        else:
+            data = "No Connected Devices"
+            k = font.render(data, True, (238,238,238))
+            disp.blit(k, (10,80))
 
 
     #changing to rear-view camera
@@ -932,7 +975,7 @@ while True:
         display = cam(pygame.Surface(size))
 
 
-    addDebug(str(volume), str(volumeSlider.xoffset), str(volumeSlider.value), str(audioPause.state), str(timers), deviceText, [audioPause.useColor, audioPause.state, audioPause.enabled])
+    addDebug(timers, DEVBack.state)
 
     text = debugFont.render(debug, True, (0,255,0))
     display.blit(text, (0,0))
