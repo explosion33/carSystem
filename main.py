@@ -589,7 +589,22 @@ def getInfo(path):
     return out
 
 def getLastDevices(path):
-    pass
+    out = {}
+    info = open(path,"w").close()
+    os.system("bash bin/lastDevices.sh")
+    info = open(path, "r")
+
+    for line in info:
+        if "Device" in line:
+            key = line[7:24]
+            p = 0
+            for i in line:
+                if i == "\\":
+                    break
+                p += 1
+            name = line[25:p-1]
+            out[key] = name
+    return out
 
 def addTimer(name, ms):
     """
@@ -625,6 +640,12 @@ def changeMenu(submenu):
     subMenu = submenu
     print("changing", submenu)
 
+def disconnect():
+    """
+    disconenct(): disconnects the current bluetooth device
+    """
+    os.system("bash bin/disconnect.sh")
+
 #initialize pygame
 pygame.init()
 size = (800,480)
@@ -657,6 +678,7 @@ volume = 50
 lastVolume = 50
 deviceInfo = getInfo("bin/info.txt")            #bluetooth device info
 lastDevices = getLastDevices("bin/devices.txt") #get previously connected devices
+print(lastDevices)
 
 #initialize clock
 clock = pygame.time.Clock()
@@ -696,7 +718,8 @@ if deviceInfo["MAC"]:
 
 
 #DEVICES
-DEVBack = button((20,10), (150,60), ("images/buttons/UIBtn.png","images/buttons/UIBtnPressed.png"),("Back", txtColor,30,""), changeMenu, "main")
+DEVBack = button((20,410), (150,60), ("images/buttons/UIBtn.png","images/buttons/UIBtnPressed.png"),("Back", txtColor,30,""), changeMenu, "main")
+DEVDisconnect = button((20,280), (150,60), ("images/buttons/UIBtn.png","images/buttons/UIBtnPressed.png"),("Disconnect", txtColor,30,""), disconnect)
 DeviceButtons = [DEVBack]
 
 
@@ -724,6 +747,8 @@ def menu(disp):
     global deviceFont
     global deviceText
     global subMenu
+    global lastDevices
+    global DEVDisconnect
 
     #Devices vars
     global DeviceButtons
@@ -732,7 +757,13 @@ def menu(disp):
 
     #default menu display
     if subMenu == "main":
-    
+        #try to connect to devices
+        if not deviceInfo["MAC"]:
+            for MAC in lastDevices:
+                cmd = "bash bin/autoConnect.sh " + MAC
+                print(cmd)
+                os.system(cmd)
+
         #audio options box
         disp.blit(audioBorder, (220,10))
 
@@ -740,7 +771,7 @@ def menu(disp):
         for cont in AudioControls:
             a,b = cont.loop(click)
             disp.blit(a,b)
-        
+
         #misc. Left buttons (primaraly to change between submenus)
         for btn in UIButtons:
             a,b = btn.loop(click)
@@ -759,7 +790,7 @@ def menu(disp):
             s = playerInfo.get_size()[0]
         x = 420 - (s/2)
         disp.blit(playerInfo, (x,20))
-    
+
         if not deviceInfo["MAC"]:
             for cont in AudioControls:
                 cont.enable(False)
@@ -773,27 +804,48 @@ def menu(disp):
             disp.blit(a,b)
 
         font = pygame.font.SysFont("", 30)
+
+        k = pygame.font.SysFont("", 35).render("DEVICE INFO", True, (238,238,238))
+        disp.blit(k, (10, 10))
+        k = pygame.font.SysFont("", 20).render("This is the Info of the currently connected Device", True, (238,238,238))
+        disp.blit(k, (12, 40))
+
         if deviceInfo["MAC"]:
+            a,b = DEVDisconnect.loop(click)
+            disp.blit(a,b)
+
             data = deviceInfo
 
             a = 0
             wmax=0
             for key in list(data.keys()):
                 k = font.render(key, True, (238,238,238))
-                disp.blit(k, (10, 80+a))
+                disp.blit(k, (20, 80+a))
                 a += 30
                 w,h = k.get_size()
                 if w > wmax: wmax = w
-            wmax += 10
+            wmax += 30
             a=0
             for key in list(data.keys()):
                 k = font.render(": " + str(data[key]), True, (238,238,238))
                 disp.blit(k, (wmax+10, 80+a))
                 a += 30
+
         else:
             data = "No Connected Devices"
             k = font.render(data, True, (238,238,238))
-            disp.blit(k, (10,80))
+            disp.blit(k, (20,80))
+
+        k = pygame.font.SysFont("", 35).render("Saved Devices", True, (238,238,238))
+        disp.blit(k, (size[0]/2, 10))
+        k = pygame.font.SysFont("", 20).render("These devices will be automaticaly conected when in range", True, (238,238,238))
+        disp.blit(k, (size[0]/2 + 2, 40))
+
+        a = 80
+        for MAC, name in lastDevices.items():
+            k = font.render(name, True, (238,238,238))
+            disp.blit(k, (size[0]/2 + 20, a))
+            a += 30
 
 
     #changing to rear-view camera
