@@ -5,7 +5,8 @@ A system designed to work with raspberry pi 4 and a touch screen monitor
 It currently includes:
   Backup Camera functionality
   The ability to switch between screens using a swipe
-  Bluetooth Audio streaming from pjone or other device
+  Bluetooth Audio streaming from phone or other device
+  
   Bluetooth commands (Play, Pause)
   
 ## Instalation
