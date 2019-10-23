@@ -11,3 +11,24 @@ To install download the files onto a raspberry pi 4 configured with an [hdmi tou
 then run
 ```python main.py```
 in the terminal
+
+## Raspberry Pi + Bluetooth Audio Setup
+To setup the raspberry pi start by running
+```sudo apt-get update```
+```sudo apt-get install bluez pulseaudio-module-bluetooth python-gobject python-gobject-2```
+then add user "pi" to the default group
+```sudo usermod -a -G lp pi```
+next enter
+```sudo nano /etc/bluetooth/audio.conf```
+and add ```Enable=Source,Sink,Media,Socket``` to the file
+then enter
+```sudo nano /etc/pulse/daemon.conf```
+and add ```resample-method = trivial```
+Finally Reboot, ```sudo reboot```
+
+Change the bluetooth adapter name by entering:
+```
+bluetoothctl
+system-alias <Alias Here>
+```
+Steps adapted from this[https://www.raspberrypi.org/forums/viewtopic.php?t=68779] guide
