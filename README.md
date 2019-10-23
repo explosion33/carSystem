@@ -13,18 +13,18 @@ then run
 in the terminal
 
 ## Raspberry Pi + Bluetooth Audio Setup
-To setup the raspberry pi start by running
-```sudo apt-get update```
-```sudo apt-get install bluez pulseaudio-module-bluetooth python-gobject python-gobject-2```
-then add user "pi" to the default group
-```sudo usermod -a -G lp pi```
-next enter
-```sudo nano /etc/bluetooth/audio.conf```
-and add ```Enable=Source,Sink,Media,Socket``` to the file
-then enter
-```sudo nano /etc/pulse/daemon.conf```
-and add ```resample-method = trivial```
-Finally Reboot, ```sudo reboot```
+To setup the raspberry pi start by running\n
+```sudo apt-get update```\n
+```sudo apt-get install bluez pulseaudio-module-bluetooth python-gobject python-gobject-2```\n
+then add user "pi" to the default group\n
+```sudo usermod -a -G lp pi```\n
+next enter\n
+```sudo nano /etc/bluetooth/audio.conf```\n
+and add ```Enable=Source,Sink,Media,Socket``` to the file\n
+then enter\n
+```sudo nano /etc/pulse/daemon.conf```\n
+and add ```resample-method = trivial```\n
+Finally Reboot, ```sudo reboot```\n
 
 Change the bluetooth adapter name by entering:
 ```
