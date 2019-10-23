@@ -1,6 +1,7 @@
 #!/bin/bash
-filename=bin/info.txt
+filename=bin/devices.txt
 bluetoothctl << EOF > $filename
-info
+devices
 exit
 EOF
+
