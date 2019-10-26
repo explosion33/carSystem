@@ -1,5 +1,5 @@
 Agent registered
-[0;94m[bluetooth][0m# devices
+[0;94m[EthanPhone][0m# devices
 Device 18:81:0E:4B:76:67 EthanPhone
-[0;94m[bluetooth][0m# exit
-[0;94m[bluetooth][0m# [K
+[0;94m[EthanPhone][0m# exit
+[0;94m[EthanPhone][0m# [K

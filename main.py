@@ -116,7 +116,7 @@ class button (object):
                         p=2
 
             img = pygame.image.load(self.color[p])
-            img = pygame.transform.smoothscale(img, self.size)
+            img = pygame.transform.smoothscale(img, (int(self.size[0]), int(self.size[1])))
 
             self.surface.blit(img, (0,0))
         
@@ -658,6 +658,19 @@ def readSettings():
     print(out)
     return out
 
+def beginPair():
+    """
+    begin the pairing process
+    """
+
+    global pairing
+    global pairStatus
+    global prePairDevices
+    pairing = True
+    pairStatus = """Now Discoverable, Look for "Car Speakers" on your device """
+    prePairDevices = getLastDevices("bin/devices.txt")
+    os.system("sudo hciconfig hci0 piscan")
+
 #initialize pygame
 pygame.init()
 size = (800,480)
@@ -680,6 +693,9 @@ mode = 'menu'                           #current mode
 subMenu = "main"                        #current submenu of menu mode
 debug = ""                              #content to be displayed at topleft of screen
 debugFont = pygame.font.SysFont("", 20) #font object for the debug text
+pairing = False                         #Handles whether or not the device is in paring mode
+pairStatus = ""
+prePairDevices = getLastDevices("bin/devices.txt")
 
 #swipe detection variables
 changex = 0
@@ -711,14 +727,15 @@ else:
     bckg = (255,255,255)
     accent = (113,113,113)
 
+backBtn = button((20,410), (150,60), (location + "UIBtn.png",location + "UIBtnPressed.png"),("Back", txtColor,30,""), changeMenu, "main") #Universal back button from sub menu
 
 UIDevices = button((20,10), (150,60), (location + "UIBtn.png",location + "UIBtnPressed.png"),("Devices", txtColor,30,""), changeMenu, "devices")
-UICamera = button((20,90), (150,60), (location + "UIBtn.png",location + "UIBtnPressed.png"),("Camera", txtColor,30,""))
-UISettings = button((20,170), (150,60), (location + "UIBtn.png",location + "UIBtnPressed.png"),("Settings", txtColor,30,""))
-UIBlank = button((20,250), (150,60), (location + "UIBtn.png",location + "UIBtnPressed.png"),("", txtColor,30,""))
+UIPair = button((20,90), (150,60), (location + "UIBtn.png",location + "UIBtnPressed.png"),("Pair", txtColor,30,""), changeMenu, "pair")
+UICamera = button((20,170), (150,60), (location + "UIBtn.png",location + "UIBtnPressed.png"),("Camera", txtColor,30,""))
+UISettings = button((20,250), (150,60), (location + "UIBtn.png",location + "UIBtnPressed.png"),("Settings", txtColor,30,""))
 UIBlank2 = button((20,330), (150,60), (location + "UIBtn.png",location + "UIBtnPressed.png"),("", txtColor,30,""))
 UIBlank3 = button((20,410), (150,60), (location + "UIBtn.png",location + "UIBtnPressed.png"),("", txtColor,30,""))
-UIButtons = [UIDevices, UICamera, UISettings, UIBlank, UIBlank2, UIBlank3]
+UIButtons = [UIDevices, UICamera, UISettings, UIPair, UIBlank2, UIBlank3]
 
 #aduio info
 audioBorder = pygame.Surface((400,460), pygame.SRCALPHA)
@@ -742,9 +759,14 @@ if deviceInfo["MAC"]:
 
 
 #DEVICES
-DEVBack = button((20,410), (150,60), (location + "UIBtn.png",location + "UIBtnPressed.png"),("Back", txtColor,30,""), changeMenu, "main")
+
 DEVDisconnect = button((20,280), (150,60), (location + "UIBtn.png",location + "UIBtnPressed.png"),("Disconnect", txtColor,30,""), disconnect)
-DeviceButtons = [DEVBack]
+DEVPair = button((size[0]/2, (size[1]/2)), (size[0]/2,size[1]/2), (location + "pair.png",location + "pairPressed.png"),("", txtColor,30,""),)
+DeviceButtons = [backBtn, DEVPair]
+
+#PAIR
+PAIRStart = button((size[0]/2 - size[0]/4,size[1]/2 - size[1]/4), (size[0]/2,size[1]/2), (bckg,bckg),("START PAIR", txtColor,70,""),beginPair)
+PairButtons = [backBtn, PAIRStart]
 
 
 #swipeBtns
@@ -775,9 +797,18 @@ def menu(disp):
     global textColor
     global settings
 
+    global UIPair
+
     #Devices vars
     global DeviceButtons
     global DEVDisconnect
+
+    #Pair vars
+    global PairButtons
+    global pairing
+    global pairStatus
+    global prePairDevices
+    
 
     disp.fill(bckg)
 
@@ -874,6 +905,37 @@ def menu(disp):
             disp.blit(k, (size[0]/2 + 20, a))
             a += 30
 
+    elif subMenu == "pair":
+        for btn in PairButtons:
+            a,b = btn.loop(click)
+            disp.blit(a,b)
+
+        if pairing:
+
+            k = pygame.font.SysFont("", 35).render(pairStatus, True, txtColor)
+            w,h = k.get_size()
+            disp.blit(k, (size[0]/2 - w/2, 50))
+
+            lst = getLastDevices("bin/devices.txt")
+            for device in lst:
+                if device not in prePairDevices:
+                    pairStatus = "pairing to " + lst[device]
+                    os.system("sudo bash bin/trustDevice.sh " + str(device))
+                    os.system("sudo bash bin/autoConnect.sh " + str(device))
+
+                    lastDevices = lst
+
+                    subMenu = "main"
+
+
+    if deviceInfo["MAC"]:
+        UIPair.enable(False)
+    else:
+        UIPair.enable()
+
+    if subMenu != "pair":
+        pairing = False
+        pairStatus = "" 
 
     #changing to rear-view camera
     global swipe1Data
@@ -1060,7 +1122,7 @@ while True:
         display = cam(pygame.Surface(size))
 
 
-    addDebug(dt, int(fps), timers, DEVBack.state)
+    addDebug(dt, int(fps), timers)
 
     text = debugFont.render(debug, True, (0,255,0))
     display.blit(text, (0,0))
