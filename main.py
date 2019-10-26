@@ -894,7 +894,7 @@ def menu(disp):
             k = font.render(data, True, txtColor)
             disp.blit(k, (20,80))
 
-        k = pygame.font.SysFont("", 35).render("Saved Devices", True, txtColor)
+        k = pygame.font.SysFont("", 35).render("Paired Devices", True, txtColor)
         disp.blit(k, (size[0]/2, 10))
         k = pygame.font.SysFont("", 20).render("These devices will be automaticaly conected when in range", True, txtColor)
         disp.blit(k, (size[0]/2 + 2, 40))
