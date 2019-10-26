@@ -879,9 +879,14 @@ def menu(disp):
         if not deviceInfo["MAC"]:
             for cont in AudioControls:
                 cont.enable(False)
+            
+            UIPair.enable()
+
         else:
             for cont in AudioControls:
                 cont.enable()
+            addDebug("AUDIO ENABLED, PAIR DISABLED")
+            UIPair.enable(False)
 
     elif subMenu == "devices":
         for btn in DeviceButtons:
@@ -963,11 +968,6 @@ def menu(disp):
                     subMenu = "main"
 
 
-    if deviceInfo["MAC"]:
-        UIPair.enable(False)
-    else:
-        UIPair.enable()
-
     if subMenu != "pair":
         pairing = False
         pairStatus = "" 
@@ -982,6 +982,12 @@ def menu(disp):
     w,h = swipe1Data[0].size
     
     if mode == "menu":
+        for cont in AudioControls:
+            cont.enable()
+        for btn in UIButtons:
+            btn.enable()
+
+
         if not changing:
             swiping, lastPos, swipeBtn1, x, moving = swipe(swipe1Data[0], swipe1Data[1], swipe1Data[2], mouse)
             swipe1Data = [swipeBtn1, swiping, lastPos]
@@ -1028,6 +1034,13 @@ def menu(disp):
     else:
         for cont in AudioControls:
             cont.enable(False)
+        for btn in UIButtons:
+            btn.enable(False)
+
+    if deviceInfo["MAC"]:
+        UIPair.enable(False)
+    else:
+        UIPair.enable()
 
     #return final display
     return disp
@@ -1160,7 +1173,7 @@ while True:
         display = cam(pygame.Surface(size))
 
 
-    addDebug(dt, int(fps), timers)
+    addDebug(dt, int(fps), timers, UIPair.enabled, deviceInfo["MAC"])
 
     text = debugFont.render(debug, True, (0,255,0))
     display.blit(text, (0,0))
