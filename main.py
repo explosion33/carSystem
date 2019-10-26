@@ -671,6 +671,31 @@ def beginPair():
     prePairDevices = getLastDevices("bin/devices.txt")
     os.system("sudo hciconfig hci0 piscan")
 
+def removeDevice(MAC):
+    """
+    removeDevice(MAC): un-pairs a bluetooth device
+    MAC : bluetooth mac adress of device ("XX:XX:XX:XX:XX:XX")
+    """
+
+    os.system("sudo bash bin/removeDevice.sh " + MAC)
+
+def makeRemoveButtons(devices=None):
+    if not devices:
+        global lastDevices
+        devices = lastDevices
+    out = []
+    a = 80
+    k = pygame.font.SysFont("", 40).render("name", True, (0,0,0))
+    w,h = k.get_size()
+
+    for MAC, name in devices.items():
+
+        remBtn = button((size[0]-5-h,a), (h,h), ("images/buttons/dark/delete.png", "images/buttons/dark/deletePressed.png"), ("", (0,0,0,0), 1, ""), removeDevice, MAC)
+        out.append(remBtn)
+
+        a += 30
+    return out
+
 #initialize pygame
 pygame.init()
 size = (800,480)
@@ -762,6 +787,7 @@ if deviceInfo["MAC"]:
 
 DEVDisconnect = button((20,280), (150,60), (location + "UIBtn.png",location + "UIBtnPressed.png"),("Disconnect", txtColor,30,""), disconnect)
 DEVPair = button((size[0]/2, (size[1]/2)), (size[0]/2,size[1]/2), (location + "pair.png",location + "pairPressed.png"),("", txtColor,30,""),)
+removeButtons = makeRemoveButtons()
 DeviceButtons = [backBtn, DEVPair]
 
 #PAIR
@@ -775,7 +801,7 @@ swipe1Data = [swipeBtn1, False, 0]
 
 swipeBtn2 = button((0,0), (80,size[1]), ((255,255,0),(255,255,0),(255,128,0)), ("",(0,0,0,0), 1, ""), initSwipe2)
 swipe2Data = [swipeBtn2, False, 0]
-
+print("TEST 1 TEST", button)
 
 def menu(disp):
     """
@@ -802,6 +828,7 @@ def menu(disp):
     #Devices vars
     global DeviceButtons
     global DEVDisconnect
+    global removeButtons
 
     #Pair vars
     global PairButtons
@@ -899,11 +926,17 @@ def menu(disp):
         k = pygame.font.SysFont("", 20).render("These devices will be automaticaly conected when in range", True, txtColor)
         disp.blit(k, (size[0]/2 + 2, 40))
 
+        
         a = 80
         for MAC, name in lastDevices.items():
-            k = font.render(name, True, txtColor)
+            k = pygame.font.SysFont("", 40).render(name, True, txtColor)
             disp.blit(k, (size[0]/2 + 20, a))
+
             a += 30
+
+        for btn in removeButtons:
+            a,b = btn.loop(click)
+            disp.blit(a,b)
 
     elif subMenu == "pair":
         for btn in PairButtons:
@@ -922,8 +955,10 @@ def menu(disp):
                     pairStatus = "pairing to " + lst[device]
                     os.system("sudo bash bin/trustDevice.sh " + str(device))
                     os.system("sudo bash bin/autoConnect.sh " + str(device))
+                    os.system("sudo hciconfig hci0 noscan")
 
                     lastDevices = lst
+                    removeButtons = makeRemoveButtons()
 
                     subMenu = "main"
 
@@ -982,11 +1017,11 @@ def menu(disp):
             volumeSlider.enable(False)
             audioMute.enable(False)
             audioPause.enable(False)
-            for button in UIButtons:
-                button.enable(False)
+            for btn in UIButtons:
+                btn.enable(False)
         else:
-            for button in UIButtons:
-                button.enable()
+            for btn in UIButtons:
+                btn.enable()
 
 
         #disp.blit(a,b)
@@ -1106,15 +1141,18 @@ while True:
         if "Refresh" not in list(timers.keys()):
             addTimer("Refresh", 1000)
         if "Refresh" in k:
+            lastDevices = getLastDevices("bin/devices.txt")
             deviceInfo = getInfo("bin/info.txt")
+            removeButtons = makeRemoveButtons()
+
             print("GOT INFO")
             deviceText = "No Device"
             if deviceInfo["MAC"]:
                 deviceText = ""
                 if deviceInfo["Alias"]:
-                    deviceText += deviceInfo["Alias"]
+                    deviceText += str(deviceInfo["Alias"])
                 else:
-                    deviceText += deviceInfo["Name"]
+                    deviceText += str(deviceInfo["Name"])
 
 
     #camera screen
