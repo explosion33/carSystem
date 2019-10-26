@@ -4,6 +4,7 @@ from pygame.locals import *
 from random import randint
 from pygame import gfxdraw
 import subprocess
+import ast
 
 
 
@@ -532,10 +533,10 @@ def play(state):
     """
     global deviceInfo
     device = deviceInfo["MAC"]
-    if state: #play
-        os.system("dbus-send --system --print-reply --dest=org.bluez /org/bluez/hci0/dev_" + device +  " org.bluez.MediaControl1.Play")
+    if state: #pause
+        os.system("dbus-send --system --print-reply --dest=org.bluez /org/bluez/hci0/dev_" + device +  " org.bluez.MediaControl1.Pause")
     else:
-        os.system("dbus-send --system --print-reply --dest=org.bluez /org/bluez/hci0/dev_" + device + " org.bluez.MediaControl1.Pause")
+        os.system("dbus-send --system --print-reply --dest=org.bluez /org/bluez/hci0/dev_" + device + " org.bluez.MediaControl1.Play")
         print()
 
 def addDebug(*args):
@@ -646,6 +647,17 @@ def disconnect():
     """
     os.system("bash bin/disconnect.sh")
 
+def readSettings():
+    """
+    readSettings(): reads settings.txt and returns a dictioanry
+    """
+
+    f = open("settings.txt", "r")
+    p = f.read()
+    out = ast.literal_eval(p)
+    print(out)
+    return out
+
 #initialize pygame
 pygame.init()
 size = (800,480)
@@ -660,9 +672,10 @@ camera = pygame.camera.Camera('/dev/video0', size)
 camera.start()
 
 #create vaious variables
+settings = readSettings()
+
 mouse = pygame.Rect(0, 0, 2, 2)         #mouse rectangle for collison
 click = False                           #stores state of mouse click
-bckg = (24,30,39)                       #bckg color
 mode = 'menu'                           #current mode
 subMenu = "main"                        #current submenu of menu mode
 debug = ""                              #content to be displayed at topleft of screen
@@ -687,23 +700,34 @@ dt = 0
 
 #definition of UI componetns
 #MAINMENU
-txtColor = (238,238,238)
-UIDevices = button((20,10), (150,60), ("images/buttons/UIBtn.png","images/buttons/UIBtnPressed.png"),("Devices", txtColor,30,""), changeMenu, "devices")
-UICamera = button((20,90), (150,60), ("images/buttons/UIBtn.png","images/buttons/UIBtnPressed.png"),("Camera", txtColor,30,""))
-UISettings = button((20,170), (150,60), ("images/buttons/UIBtn.png","images/buttons/UIBtnPressed.png"),("Settings", txtColor,30,""))
-UIBlank = button((20,250), (150,60), ("images/buttons/UIBtn.png","images/buttons/UIBtnPressed.png"),("", txtColor,30,""))
-UIBlank2 = button((20,330), (150,60), ("images/buttons/UIBtn.png","images/buttons/UIBtnPressed.png"),("", txtColor,30,""))
-UIBlank3 = button((20,410), (150,60), ("images/buttons/UIBtn.png","images/buttons/UIBtnPressed.png"),("", txtColor,30,""))
+if settings["mode"] == "dark":
+    location = "images/buttons/dark/"
+    txtColor = (238,238,238)
+    bckg = (24,30,39)
+    accent = (33,62,69)
+else:
+    location = "images/buttons/light/"
+    txtColor = (35,35,35)
+    bckg = (255,255,255)
+    accent = (113,113,113)
+
+
+UIDevices = button((20,10), (150,60), (location + "UIBtn.png",location + "UIBtnPressed.png"),("Devices", txtColor,30,""), changeMenu, "devices")
+UICamera = button((20,90), (150,60), (location + "UIBtn.png",location + "UIBtnPressed.png"),("Camera", txtColor,30,""))
+UISettings = button((20,170), (150,60), (location + "UIBtn.png",location + "UIBtnPressed.png"),("Settings", txtColor,30,""))
+UIBlank = button((20,250), (150,60), (location + "UIBtn.png",location + "UIBtnPressed.png"),("", txtColor,30,""))
+UIBlank2 = button((20,330), (150,60), (location + "UIBtn.png",location + "UIBtnPressed.png"),("", txtColor,30,""))
+UIBlank3 = button((20,410), (150,60), (location + "UIBtn.png",location + "UIBtnPressed.png"),("", txtColor,30,""))
 UIButtons = [UIDevices, UICamera, UISettings, UIBlank, UIBlank2, UIBlank3]
 
 #aduio info
 audioBorder = pygame.Surface((400,460), pygame.SRCALPHA)
 audioBorder.fill((0,0,0,0))
-AAfilledRoundedRect(audioBorder,audioBorder.get_rect(),(33,62,69),0.05)
+AAfilledRoundedRect(audioBorder,audioBorder.get_rect(), accent,0.05)
 
-audioMute = toggleButton((230,420), (40,40), ("images/buttons/volumeOn.png", "images/buttons/volumeMute.png"), ("", txtColor,30,""), mute)
-audioPause = toggleButton((320,140),(200,200), ("images/buttons/play.png", "images/buttons/pause.png", "images/buttons/playDisabled.png", "images/buttons/pauseDisabled.png"), ("", txtColor,30,""), play)
-volumeSlider = slider((280, 420), (320, 30), (238,238,238),("images/buttons/slide.png", "images/buttons/slidePressed.png"), [0,100], 50, chagneVolume)
+audioMute = toggleButton((230,420), (40,40), (location + "volumeOn.png", location + "volumeMute.png"), ("", txtColor,30,""), mute)
+audioPause = toggleButton((320,140),(200,200), (location + "play.png", location + "pause.png", location + "playDisabled.png", location + "pauseDisabled.png"), ("", txtColor,30,""), play)
+volumeSlider = slider((280, 420), (320, 30), (238,238,238),(location + "slide.png", location + "slidePressed.png"), [0,100], 50, chagneVolume)
 AudioControls = [audioMute, audioPause, volumeSlider]
 
 #get apropriate name to display as streaming device
@@ -718,8 +742,8 @@ if deviceInfo["MAC"]:
 
 
 #DEVICES
-DEVBack = button((20,410), (150,60), ("images/buttons/UIBtn.png","images/buttons/UIBtnPressed.png"),("Back", txtColor,30,""), changeMenu, "main")
-DEVDisconnect = button((20,280), (150,60), ("images/buttons/UIBtn.png","images/buttons/UIBtnPressed.png"),("Disconnect", txtColor,30,""), disconnect)
+DEVBack = button((20,410), (150,60), (location + "UIBtn.png",location + "UIBtnPressed.png"),("Back", txtColor,30,""), changeMenu, "main")
+DEVDisconnect = button((20,280), (150,60), (location + "UIBtn.png",location + "UIBtnPressed.png"),("Disconnect", txtColor,30,""), disconnect)
 DeviceButtons = [DEVBack]
 
 
@@ -748,21 +772,24 @@ def menu(disp):
     global deviceText
     global subMenu
     global lastDevices
-    global DEVDisconnect
+    global textColor
+    global settings
 
     #Devices vars
     global DeviceButtons
+    global DEVDisconnect
 
     disp.fill(bckg)
 
     #default menu display
     if subMenu == "main":
         #try to connect to devices
-        if not deviceInfo["MAC"]:
-            for MAC in lastDevices:
-                cmd = "bash bin/autoConnect.sh " + MAC
-                print(cmd)
-                os.system(cmd)
+        if settings["autoConnect"] == "on":
+            if not deviceInfo["MAC"]:
+                for MAC in lastDevices:
+                    cmd = "bash bin/autoConnect.sh " + MAC
+                    print(cmd)
+                    os.system(cmd)
 
         #audio options box
         disp.blit(audioBorder, (220,10))
@@ -778,7 +805,7 @@ def menu(disp):
             disp.blit(a,b)
 
         #Name of the current connected device
-        playerInfo = deviceFont.render(deviceText, True, (238,238,238))
+        playerInfo = deviceFont.render(deviceText, True, txtColor)
         s = playerInfo.get_size()[0]
 
         #if width of text is bigger than aduio panel remove a letters and add ...
@@ -805,9 +832,9 @@ def menu(disp):
 
         font = pygame.font.SysFont("", 30)
 
-        k = pygame.font.SysFont("", 35).render("DEVICE INFO", True, (238,238,238))
+        k = pygame.font.SysFont("", 35).render("DEVICE INFO", True, txtColor)
         disp.blit(k, (10, 10))
-        k = pygame.font.SysFont("", 20).render("This is the Info of the currently connected Device", True, (238,238,238))
+        k = pygame.font.SysFont("", 20).render("This is the Info of the currently connected Device", True, txtColor)
         disp.blit(k, (12, 40))
 
         if deviceInfo["MAC"]:
@@ -819,7 +846,7 @@ def menu(disp):
             a = 0
             wmax=0
             for key in list(data.keys()):
-                k = font.render(key, True, (238,238,238))
+                k = font.render(key, True, txtColor)
                 disp.blit(k, (20, 80+a))
                 a += 30
                 w,h = k.get_size()
@@ -827,23 +854,23 @@ def menu(disp):
             wmax += 30
             a=0
             for key in list(data.keys()):
-                k = font.render(": " + str(data[key]), True, (238,238,238))
+                k = font.render(": " + str(data[key]), True, txtColor)
                 disp.blit(k, (wmax+10, 80+a))
                 a += 30
 
         else:
             data = "No Connected Devices"
-            k = font.render(data, True, (238,238,238))
+            k = font.render(data, True, txtColor)
             disp.blit(k, (20,80))
 
-        k = pygame.font.SysFont("", 35).render("Saved Devices", True, (238,238,238))
+        k = pygame.font.SysFont("", 35).render("Saved Devices", True, txtColor)
         disp.blit(k, (size[0]/2, 10))
-        k = pygame.font.SysFont("", 20).render("These devices will be automaticaly conected when in range", True, (238,238,238))
+        k = pygame.font.SysFont("", 20).render("These devices will be automaticaly conected when in range", True, txtColor)
         disp.blit(k, (size[0]/2 + 2, 40))
 
         a = 80
         for MAC, name in lastDevices.items():
-            k = font.render(name, True, (238,238,238))
+            k = font.render(name, True, txtColor)
             disp.blit(k, (size[0]/2 + 20, a))
             a += 30
 
@@ -901,7 +928,9 @@ def menu(disp):
 
 
         #disp.blit(a,b)
-
+    else:
+        for cont in AudioControls:
+            cont.enable(False)
 
     #return final display
     return disp
@@ -978,23 +1007,11 @@ def cam(disp):
     return disp
 
 #main loop
+
+
 while True:
     dt = clock.tick()
-    k = countTimers(dt)
-    addDebug(deviceInfo["Name"])
-    if "Refresh" not in list(timers.keys()):
-        addTimer("Refresh", 1000)
-    if "Refresh" in k:
-            deviceInfo = getInfo("bin/info.txt")
-            print("GOT INFO")
-            deviceText = "No Device"
-            if deviceInfo["MAC"]:
-                deviceText = ""
-                if deviceInfo["Alias"]:
-                    deviceText += deviceInfo["Alias"]
-                else:
-                    deviceText += deviceInfo["Name"]
-
+    fps = clock.get_fps()
 
     #gets game events
     for event in pygame.event.get():
@@ -1022,12 +1039,28 @@ while True:
     if mode == 'menu':
         display = menu(pygame.Surface(size))
 
+        k = countTimers(dt)
+    
+        if "Refresh" not in list(timers.keys()):
+            addTimer("Refresh", 1000)
+        if "Refresh" in k:
+            deviceInfo = getInfo("bin/info.txt")
+            print("GOT INFO")
+            deviceText = "No Device"
+            if deviceInfo["MAC"]:
+                deviceText = ""
+                if deviceInfo["Alias"]:
+                    deviceText += deviceInfo["Alias"]
+                else:
+                    deviceText += deviceInfo["Name"]
+
+
     #camera screen
     elif mode == "cam":
         display = cam(pygame.Surface(size))
 
 
-    addDebug(timers, DEVBack.state)
+    addDebug(dt, int(fps), timers, DEVBack.state)
 
     text = debugFont.render(debug, True, (0,255,0))
     display.blit(text, (0,0))
