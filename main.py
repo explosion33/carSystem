@@ -142,7 +142,7 @@ class button (object):
                 
                 print(self.function, self.args)
                 if self.function:
-                    if self.args:
+                    if self.args is not None:
                         self.function(self.args)
                     else:
                         self.function()
@@ -537,7 +537,6 @@ def play(state):
         os.system("dbus-send --system --print-reply --dest=org.bluez /org/bluez/hci0/dev_" + device +  " org.bluez.MediaControl1.Pause")
     else:
         os.system("dbus-send --system --print-reply --dest=org.bluez /org/bluez/hci0/dev_" + device + " org.bluez.MediaControl1.Play")
-        print()
 
 def addDebug(*args):
     """
@@ -696,6 +695,23 @@ def makeRemoveButtons(devices=None):
         a += 30
     return out
 
+def skip(cond):
+    """
+    skip(cond): skips or backtracks audio
+    cond : True or False (True = skip)
+    """
+
+    global deviceInfo
+    device = deviceInfo["MAC"]
+
+    if cond: #skip
+        os.system("dbus-send --system --print-reply --dest=org.bluez /org/bluez/hci0/dev_" + device +  " org.bluez.MediaControl1.Next")
+    else:
+        os.system("dbus-send --system --print-reply --dest=org.bluez /org/bluez/hci0/dev_" + device + " org.bluez.MediaControl1.Previous")
+
+
+
+
 #initialize pygame
 pygame.init()
 size = (800,480)
@@ -768,9 +784,11 @@ audioBorder.fill((0,0,0,0))
 AAfilledRoundedRect(audioBorder,audioBorder.get_rect(), accent,0.05)
 
 audioMute = toggleButton((230,420), (40,40), (location + "volumeOn.png", location + "volumeMute.png"), ("", txtColor,30,""), mute)
-audioPause = toggleButton((320,140),(200,200), (location + "play.png", location + "pause.png", location + "playDisabled.png", location + "pauseDisabled.png"), ("", txtColor,30,""), play)
+audioPause = toggleButton((335,155),(170,170), (location + "play.png", location + "pause.png", location + "playDisabled.png", location + "pauseDisabled.png"), ("", txtColor,30,""), play)
+audioForward = button((520,203), (75,75), (location + "forward.png",location + "forwardPressed.png"),("", txtColor,30,""), skip, True)
+audioBackward = button((245,203), (75,75), (location + "back.png",location + "backPressed.png"),("", txtColor,30,""), skip, False)
 volumeSlider = slider((280, 420), (320, 30), (238,238,238),(location + "slide.png", location + "slidePressed.png"), [0,100], 50, chagneVolume)
-AudioControls = [audioMute, audioPause, volumeSlider]
+AudioControls = [audioMute, audioPause, volumeSlider, audioForward, audioBackward]
 
 #get apropriate name to display as streaming device
 deviceFont = pygame.font.SysFont("", 45)
