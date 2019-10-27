@@ -155,7 +155,12 @@ class button (object):
                 self.useColor = 0
                 self.draw()
     
-    def loop(self, click,):
+    def loop(self, click):
+        """
+        loop(self, click): should be called once per loop\n
+        click : boolean containing info on weather or not mousedown is true\n
+        returns : (self.surface, self.pos)
+        """
         if self.enabled:
             self.interact(click)
         return (self.surface, self.pos)
@@ -185,6 +190,10 @@ class toggleButton(button):
         self.function = function
 
     def interact(self, click):
+        """
+        interact(click): handles texture changes and function calling for the button\n
+        click : boolean denoting weather or not the mousebutton is currently down
+        """
         mouse = pygame.Rect(0, 0, 2, 2)
         xm, ym = pygame.mouse.get_pos()
         mouse.center = (xm,ym)
@@ -221,6 +230,7 @@ class toggleButton(button):
             if self.enabled:
                 self.enabled = False
                 self.draw()
+
 
 class slider(object):
     """
@@ -356,6 +366,11 @@ class slider(object):
             self.function(self.value)  
     
     def loop(self, click):
+        """
+        loop(self, click): should be called once per loop\n
+        click : boolean containing info on weather or not mousedown is true\n
+        returns : (self.surface, self.pos)
+        """
         if self.enabled:
             self.interact(click)
 
@@ -376,15 +391,6 @@ class slider(object):
                 self.enabled = False
                 self.draw()
         
-
-def getCenterPos(dimensions, screenSize):
-    """
-    getCenterPos(dimensions, screenSize): gets the (x,y) position in order to center an object on its screen\n
-    dimensions : the (width, height) of the object\n
-    screenSize : the (width, height) of the screen\n
-    """
-    center = (screenSize[0]/2-dimensions[0]/2,screenSize[1]/2-dimensions[1]/2)
-    return center
 
 def initSwipe():
     """
@@ -589,6 +595,11 @@ def getInfo(path):
     return out
 
 def getLastDevices(path):
+    """
+    getLastDevices(path): reads and parses previously paired devices from txt file\n
+    path : str, path to the .txt file containing the info\n
+    returns dict {MAC_ADRESS: Name}
+    """
     out = {}
     info = open(path,"w").close()
     os.system("bash bin/lastDevices.sh")
@@ -679,6 +690,11 @@ def removeDevice(MAC):
     os.system("sudo bash bin/removeDevice.sh " + MAC)
 
 def makeRemoveButtons(devices=None):
+    """
+    makeRemoveButtons(devices=None): creates a list of buttons that remove the device for each device\n
+    devices : optional list that replaces the global lastDevices\n
+    returns: list of buttons
+    """
     if not devices:
         global lastDevices
         devices = lastDevices
@@ -697,7 +713,7 @@ def makeRemoveButtons(devices=None):
 
 def skip(cond):
     """
-    skip(cond): skips or backtracks audio
+    skip(cond): skips or backtracks audio\n
     cond : True or False (True = skip)
     """
 
@@ -710,23 +726,20 @@ def skip(cond):
         os.system("dbus-send --system --print-reply --dest=org.bluez /org/bluez/hci0/dev_" + device + " org.bluez.MediaControl1.Previous")
 
 
-
-
 #initialize pygame
 pygame.init()
 size = (800,480)
 screen = pygame.display.set_mode(size, pygame.FULLSCREEN)                   #visible display
-display = pygame.Surface(size)                                              #working display (gets added to bisible display) (can be useful for scaling entire display)
+display = pygame.Surface(size)                                              #working display (gets added to visible display) (can be useful for scaling entire display)
 pygame.mouse.set_cursor((8,8),(0,0),(0,0,0,0,0,0,0,0),(0,0,0,0,0,0,0,0))    #makes cursor invisible whilst still allowing for its functionality
 
 #initialize pygames camera library
 pygame.camera.init()
 camera = pygame.camera.Camera('/dev/video0', size)
-#camera.set_controls(hflip=True)
 camera.start()
 
 #create vaious variables
-settings = readSettings()
+settings = readSettings()               #seetings dictionary
 
 mouse = pygame.Rect(0, 0, 2, 2)         #mouse rectangle for collison
 click = False                           #stores state of mouse click
@@ -734,7 +747,9 @@ mode = 'menu'                           #current mode
 subMenu = "main"                        #current submenu of menu mode
 debug = ""                              #content to be displayed at topleft of screen
 debugFont = pygame.font.SysFont("", 20) #font object for the debug text
-pairing = False                         #Handles whether or not the device is in paring mode
+
+#Pairing variables
+pairing = False
 pairStatus = ""
 prePairDevices = getLastDevices("bin/devices.txt")
 
@@ -745,19 +760,17 @@ changing = False
 
 #system variables
 volume = 50
-lastVolume = 50
+lastVolume = 50                                 #used to determine if the volume needs to be updated
 deviceInfo = getInfo("bin/info.txt")            #bluetooth device info
-lastDevices = getLastDevices("bin/devices.txt") #get previously connected devices
-print(lastDevices)
+lastDevices = getLastDevices("bin/devices.txt") #get previously paired devices
 
 #initialize clock
 clock = pygame.time.Clock()
 timers = {}
-dt = 0
+dt = 0                          #time between loop
 
 #definition of UI componetns
-#MAINMENU
-if settings["mode"] == "dark":
+if settings["mode"] == "dark":  #determine what images to use (light/dark)
     location = "images/buttons/dark/"
     txtColor = (238,238,238)
     bckg = (24,30,39)
@@ -768,8 +781,10 @@ else:
     bckg = (255,255,255)
     accent = (113,113,113)
 
+
 backBtn = button((20,410), (150,60), (location + "UIBtn.png",location + "UIBtnPressed.png"),("Back", txtColor,30,""), changeMenu, "main") #Universal back button from sub menu
 
+#MAINMENU
 UIDevices = button((20,10), (150,60), (location + "UIBtn.png",location + "UIBtnPressed.png"),("Devices", txtColor,30,""), changeMenu, "devices")
 UIPair = button((20,90), (150,60), (location + "UIBtn.png",location + "UIBtnPressed.png"),("Pair", txtColor,30,""), changeMenu, "pair")
 UICamera = button((20,170), (150,60), (location + "UIBtn.png",location + "UIBtnPressed.png"),("Camera", txtColor,30,""))
@@ -801,14 +816,14 @@ if deviceInfo["MAC"]:
         deviceText += deviceInfo["Name"]
 
 
-#DEVICES
+#DEVICES menu
 
 DEVDisconnect = button((20,280), (150,60), (location + "UIBtn.png",location + "UIBtnPressed.png"),("Disconnect", txtColor,30,""), disconnect)
 DEVPair = button((size[0]/2, (size[1]/2)), (size[0]/2,size[1]/2), (location + "pair.png",location + "pairPressed.png"),("", txtColor,30,""),)
 removeButtons = makeRemoveButtons()
 DeviceButtons = [backBtn, DEVPair]
 
-#PAIR
+#PAIR menu
 PAIRStart = button((size[0]/2 - size[0]/4,size[1]/2 - size[1]/4), (size[0]/2,size[1]/2), (bckg,bckg),("START PAIR", txtColor,70,""),beginPair)
 PairButtons = [backBtn, PAIRStart]
 
@@ -819,7 +834,6 @@ swipe1Data = [swipeBtn1, False, 0]
 
 swipeBtn2 = button((0,0), (80,size[1]), ((255,255,0),(255,255,0),(255,128,0)), ("",(0,0,0,0), 1, ""), initSwipe2)
 swipe2Data = [swipeBtn2, False, 0]
-print("TEST 1 TEST", button)
 
 def menu(disp):
     """
@@ -841,14 +855,13 @@ def menu(disp):
     global textColor
     global settings
 
-    global UIPair
-
     #Devices vars
     global DeviceButtons
     global DEVDisconnect
     global removeButtons
 
     #Pair vars
+    global UIPair
     global PairButtons
     global pairing
     global pairStatus
@@ -859,7 +872,7 @@ def menu(disp):
 
     #default menu display
     if subMenu == "main":
-        #try to connect to devices
+        #try to connect to devices (auto connect)
         if settings["autoConnect"] == "on":
             if not deviceInfo["MAC"]:
                 for MAC in lastDevices:
@@ -894,6 +907,7 @@ def menu(disp):
         x = 420 - (s/2)
         disp.blit(playerInfo, (x,20))
 
+        #disable audio controls if there is no conencted device
         if not deviceInfo["MAC"]:
             for cont in AudioControls:
                 cont.enable(False)
@@ -903,21 +917,25 @@ def menu(disp):
         else:
             for cont in AudioControls:
                 cont.enable()
-            addDebug("AUDIO ENABLED, PAIR DISABLED")
             UIPair.enable(False)
 
+    #devices menu display
     elif subMenu == "devices":
+        #display all buttons
         for btn in DeviceButtons:
             a,b = btn.loop(click)
             disp.blit(a,b)
 
+        #main font
         font = pygame.font.SysFont("", 30)
 
+        # Title + subtitle for device info
         k = pygame.font.SysFont("", 35).render("DEVICE INFO", True, txtColor)
         disp.blit(k, (10, 10))
         k = pygame.font.SysFont("", 20).render("This is the Info of the currently connected Device", True, txtColor)
         disp.blit(k, (12, 40))
 
+        # if there is a device list info
         if deviceInfo["MAC"]:
             a,b = DEVDisconnect.loop(click)
             disp.blit(a,b)
@@ -944,12 +962,13 @@ def menu(disp):
             k = font.render(data, True, txtColor)
             disp.blit(k, (20,80))
 
+        #Title + subTitle for previously paired devices 
         k = pygame.font.SysFont("", 35).render("Paired Devices", True, txtColor)
         disp.blit(k, (size[0]/2, 10))
         k = pygame.font.SysFont("", 20).render("These devices will be automaticaly conected when in range", True, txtColor)
         disp.blit(k, (size[0]/2 + 2, 40))
 
-        
+        #list all previously paired devices
         a = 80
         for MAC, name in lastDevices.items():
             k = pygame.font.SysFont("", 40).render(name, True, txtColor)
@@ -957,38 +976,46 @@ def menu(disp):
 
             a += 30
 
+        #display buttons to remove each device
         for btn in removeButtons:
             a,b = btn.loop(click)
             disp.blit(a,b)
 
+    #pair menu display
     elif subMenu == "pair":
+        #display pairing menu buttons
         for btn in PairButtons:
             a,b = btn.loop(click)
             disp.blit(a,b)
 
+        #if pairing mode is activated (clicked start pair button)
         if pairing:
 
+            #start displaying pairing status text
             k = pygame.font.SysFont("", 35).render(pairStatus, True, txtColor)
             w,h = k.get_size()
             disp.blit(k, (size[0]/2 - w/2, 50))
 
+            #get currnet devices and compare it to old devices to see if a new device was added
             lst = getLastDevices("bin/devices.txt")
             for device in lst:
                 if device not in prePairDevices:
                     pairStatus = "pairing to " + lst[device]
-                    os.system("sudo bash bin/trustDevice.sh " + str(device))
-                    os.system("sudo bash bin/autoConnect.sh " + str(device))
-                    os.system("sudo hciconfig hci0 noscan")
+                    os.system("sudo bash bin/trustDevice.sh " + str(device))    #trust the new device
+                    os.system("sudo bash bin/autoConnect.sh " + str(device))    #connect to the new device
+                    os.system("sudo hciconfig hci0 noscan")                     #disable discoverable mode
 
-                    lastDevices = lst
-                    removeButtons = makeRemoveButtons()
+                    lastDevices = lst                                           #re register device list
+                    removeButtons = makeRemoveButtons()                         #re register remove device buttons
 
                     subMenu = "main"
 
-
+    #if not in the pairing menu disable pair mode and pair status text
     if subMenu != "pair":
-        pairing = False
-        pairStatus = "" 
+        if pairing:
+            pairing = False
+            pairStatus = "" 
+            os.system("sudo hciconfig hci0 noscan")
 
     #changing to rear-view camera
     global swipe1Data
@@ -1000,24 +1027,31 @@ def menu(disp):
     w,h = swipe1Data[0].size
     
     if mode == "menu":
+        #enable all the controls
         for cont in AudioControls:
-            cont.enable()
+            if cont.enabled == False:
+                cont.enable()
         for btn in UIButtons:
-            btn.enable()
+            if btn.enabled == False:
+                btn.enable()
 
-
+        #if not undergoing the auto slide process to switch to camera
         if not changing:
             swiping, lastPos, swipeBtn1, x, moving = swipe(swipe1Data[0], swipe1Data[1], swipe1Data[2], mouse)
             swipe1Data = [swipeBtn1, swiping, lastPos]
 
+            #if swiped past threshold begin auto swipe
             if x < size[0]-(size[0]/swipeThreshhold) and not click and not changing:
                 changex = x
                 changing = True
 
+        #auto swiping
         if changing:
             moving = True
             changex -= 60
             x = changex
+
+            #if menu is compleyely off screen switch to camera mode and reset vars
             if x < 0:
                 print("Switching to cam")
                 mode = "cam"
@@ -1027,6 +1061,7 @@ def menu(disp):
                 swipe1Data = [b, False, 0]
                 changing = False
 
+        #if the user is swiping add one screen onto the other
         if moving:
             disp2 = cam(pygame.Surface(size))
             disp3 = pygame.Surface(size)
@@ -1043,22 +1078,23 @@ def menu(disp):
             audioPause.enable(False)
             for btn in UIButtons:
                 btn.enable(False)
-        else:
+        else: #if not swiping re-enable the buttons
             for btn in UIButtons:
                 btn.enable()
 
-
-        #disp.blit(a,b)
-    else:
+    else: #if the mode is not menu disable the audio controls so they dont accidently get pressed
         for cont in AudioControls:
             cont.enable(False)
         for btn in UIButtons:
             btn.enable(False)
 
+    #if device is conencted disable pair button, otherwise enable it
     if deviceInfo["MAC"]:
-        UIPair.enable(False)
+        if UIPair.enabled:
+            UIPair.enable(False)
     else:
-        UIPair.enable()
+        if UIPair.enabled == False:
+            UIPair.enable()
 
     #return final display
     return disp
@@ -1089,6 +1125,8 @@ def cam(disp):
         disp.blit(s, (0,0))
     disp = pygame.transform.flip(disp, True, False)
 
+
+    #SWIPE HANDLING SAME AS MENU
     global swipe2Data
     global changing
     global changex
@@ -1155,9 +1193,11 @@ while True:
         elif event.type == pygame.MOUSEBUTTONUP:
             click = False
 
+    #if there is a click update the mouse rectangle (simulates touch)
     if click:
         mouse.center = pygame.mouse.get_pos()
 
+    #if volume doesnt ewual last volume change it
     if audioMute.state:
         if volume != lastVolume:
             subprocess.call(["amixer", "-D", "pulse", "sset", "Master", str(volume) + "%"])
@@ -1169,6 +1209,7 @@ while True:
 
         k = countTimers(dt)
     
+        #if refresh timer has finished refresh device variables
         if "Refresh" not in list(timers.keys()):
             addTimer("Refresh", 1000)
         if "Refresh" in k:
@@ -1190,9 +1231,8 @@ while True:
     elif mode == "cam":
         display = cam(pygame.Surface(size))
 
-
-    addDebug(dt, int(fps), timers, UIPair.enabled, deviceInfo["MAC"])
-
+    #render debug text
+    addDebug(dt, int(fps), timers)
     text = debugFont.render(debug, True, (0,255,0))
     display.blit(text, (0,0))
     debug = ""
