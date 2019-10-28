@@ -174,10 +174,15 @@ class button (object):
         if enabled:
             if not self.enabled:
                 self.enabled = True
+                self.useColor = 0
                 self.draw()
         else:
             if self.enabled:
                 self.enabled = False
+
+                if len(self.color) >=3:
+                    self.useColor = 2
+
                 self.draw()
         
 
@@ -786,7 +791,7 @@ backBtn = button((20,410), (150,60), (location + "UIBtn.png",location + "UIBtnPr
 
 #MAINMENU
 UIDevices = button((20,10), (150,60), (location + "UIBtn.png",location + "UIBtnPressed.png"),("Devices", txtColor,30,""), changeMenu, "devices")
-UIPair = button((20,90), (150,60), (location + "UIBtn.png",location + "UIBtnPressed.png"),("Pair", txtColor,30,""), changeMenu, "pair")
+UIPair = button((20,90), (150,60), (location + "UIBtn.png",location + "UIBtnPressed.png", location + "UIBtnDisabled.png"),("Pair", txtColor,30,""), changeMenu, "pair")
 UICamera = button((20,170), (150,60), (location + "UIBtn.png",location + "UIBtnPressed.png"),("Camera", txtColor,30,""))
 UISettings = button((20,250), (150,60), (location + "UIBtn.png",location + "UIBtnPressed.png"),("Settings", txtColor,30,""))
 UIBlank2 = button((20,330), (150,60), (location + "UIBtn.png",location + "UIBtnPressed.png"),("", txtColor,30,""))
