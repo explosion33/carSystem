@@ -681,10 +681,15 @@ def beginPair():
     global pairing
     global pairStatus
     global prePairDevices
-    pairing = True
-    pairStatus = """Now Discoverable, Look for "Car Speakers" on your device """
-    prePairDevices = getLastDevices("bin/devices.txt")
-    os.system("sudo hciconfig hci0 piscan")
+    if not pairing:
+        pairing = True
+        pairStatus = """Now Discoverable, Look for "Car Speakers" on your device """
+        prePairDevices = getLastDevices("bin/devices.txt")
+        os.system("sudo hciconfig hci0 piscan")
+    else:
+        pairing = False
+        pairStatus = ""
+        os.system("sudo hciconfig hci0 noscan")
 
 def removeDevice(MAC):
     """
@@ -824,9 +829,8 @@ if deviceInfo["MAC"]:
 #DEVICES menu
 
 DEVDisconnect = button((20,280), (150,60), (location + "UIBtn.png",location + "UIBtnPressed.png"),("Disconnect", txtColor,30,""), disconnect)
-DEVPair = button((size[0]/2, (size[1]/2)), (size[0]/2,size[1]/2), (location + "pair.png",location + "pairPressed.png"),("", txtColor,30,""),)
 removeButtons = makeRemoveButtons()
-DeviceButtons = [backBtn, DEVPair]
+DeviceButtons = [backBtn]
 
 #PAIR menu
 PAIRStart = button((size[0]/2 - size[0]/4,size[1]/2 - size[1]/4), (size[0]/2,size[1]/2), (bckg,bckg),("START PAIR", txtColor,70,""),beginPair)
@@ -994,8 +998,12 @@ def menu(disp):
             disp.blit(a,b)
 
         #if pairing mode is activated (clicked start pair button)
-        if pairing:
+        addDebug(PAIRStart.text, pairing)
 
+        if pairing:
+            if PAIRStart.text[0] == "START PAIR":
+                PAIRStart.text = ("STOP PAIR", PAIRStart.text[1], PAIRStart.text[2], PAIRStart.text[3],)
+                PAIRStart.draw()
             #start displaying pairing status text
             k = pygame.font.SysFont("", 35).render(pairStatus, True, txtColor)
             w,h = k.get_size()
@@ -1014,6 +1022,10 @@ def menu(disp):
                     removeButtons = makeRemoveButtons()                         #re register remove device buttons
 
                     subMenu = "main"
+        else:
+            if PAIRStart.text[0] == "STOP PAIR":
+                PAIRStart.text = ("START PAIR", PAIRStart.text[1], PAIRStart.text[2], PAIRStart.text[3],)
+                PAIRStart.draw()
 
     #if not in the pairing menu disable pair mode and pair status text
     if subMenu != "pair":
