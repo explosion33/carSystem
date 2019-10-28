@@ -718,7 +718,7 @@ def makeRemoveButtons(devices=None):
         remBtn = button((size[0]-5-h,a), (h,h), ("images/buttons/dark/delete.png", "images/buttons/dark/deletePressed.png"), ("", (0,0,0,0), 1, ""), removeDevice, MAC)
         out.append(remBtn)
 
-        a += 30
+        a += 50
     return out
 
 def skip(cond):
@@ -983,7 +983,7 @@ def menu(disp):
             k = pygame.font.SysFont("", 40).render(name, True, txtColor)
             disp.blit(k, (size[0]/2 + 20, a))
 
-            a += 30
+            a += 50
 
         #display buttons to remove each device
         for btn in removeButtons:
