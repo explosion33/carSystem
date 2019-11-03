@@ -48,5 +48,6 @@ Change the bluetooth adapter name by entering:
 ```
 bluetoothctl
 system-alias <Alias Here>
+exit
 ```
 Steps adapted from [this](https://www.raspberrypi.org/forums/viewtopic.php?t=68779) guide
