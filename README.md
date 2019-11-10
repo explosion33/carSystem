@@ -51,4 +51,5 @@ system-alias <Alias Here>
 exit
 ```
 IF AUDIO DOES NOT PLAY MAKE SURE HEADPHONES/SPEAKERS ARE PLUGGED IN
+
 Steps adapted from [this](https://www.raspberrypi.org/forums/viewtopic.php?t=68779) guide
