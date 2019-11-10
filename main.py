@@ -165,16 +165,17 @@ class button (object):
             self.interact(click)
         return (self.surface, self.pos)
 
-    def enable(self, enabled=True):
+    def enable(self, en=True):
         """
-        enabled(enabled=True): sets whether or not the button can be interacted with\n
+        enable(en=True): sets whether or not the button can be interacted with\n
         If a third image or color is provided it will be used for the disabled state\n
-        enabled : whether or not the button is enabled (True = enabled, False = Disabled)
+        en : whether or not the button is enabled (True = enabled, False = Disabled)
         """
-        if enabled:
+        if en:
             if not self.enabled:
                 self.enabled = True
                 self.useColor = 0
+                print("drew",self.text[0], str(self.function), "button")
                 self.draw()
         else:
             if self.enabled:
@@ -183,6 +184,7 @@ class button (object):
                 if len(self.color) >=3:
                     self.useColor = 2
 
+                print("drew, not enabled", self.text[0], str(self.function), "button")
                 self.draw()
         
 
@@ -798,15 +800,15 @@ else:
     accent = (113,113,113)
 
 
-backBtn = button((20,410), (150,60), (location + "UIBtn.png",location + "UIBtnPressed.png"),("Back", txtColor,30,""), changeMenu, "main") #Universal back button from sub menu
+backBtn = button((20,410), (150,60), (location + "UIBtn.png",location + "UIBtnPressed.png", location + "UIBtnDisabled.png"),("Back", txtColor,30,""), changeMenu, "main") #Universal back button from sub menu
 
 #MAINMENU
-UIDevices = button((20,10), (150,60), (location + "UIBtn.png",location + "UIBtnPressed.png"),("Devices", txtColor,30,""), changeMenu, "devices")
+UIDevices = button((20,10), (150,60), (location + "UIBtn.png",location + "UIBtnPressed.png", location + "UIBtnDisabled.png"),("Devices", txtColor,30,""), changeMenu, "devices")
 UIPair = button((20,90), (150,60), (location + "UIBtn.png",location + "UIBtnPressed.png", location + "UIBtnDisabled.png"),("Pair", txtColor,30,""), changeMenu, "pair")
-UICamera = button((20,170), (150,60), (location + "UIBtn.png",location + "UIBtnPressed.png"),("Camera", txtColor,30,""))
-UISettings = button((20,250), (150,60), (location + "UIBtn.png",location + "UIBtnPressed.png"),("Settings", txtColor,30,""))
-UIBlank2 = button((20,330), (150,60), (location + "UIBtn.png",location + "UIBtnPressed.png"),("", txtColor,30,""))
-UIBlank3 = button((20,410), (150,60), (location + "UIBtn.png",location + "UIBtnPressed.png"),("", txtColor,30,""))
+UICamera = button((20,170), (150,60), (location + "UIBtn.png",location + "UIBtnPressed.png", location + "UIBtnDisabled.png"),("Camera", txtColor,30,""))
+UISettings = button((20,250), (150,60), (location + "UIBtn.png",location + "UIBtnPressed.png", location + "UIBtnDisabled.png"),("Settings", txtColor,30,""))
+UIBlank2 = button((20,330), (150,60), (location + "UIBtn.png",location + "UIBtnPressed.png", location + "UIBtnDisabled.png"),("", txtColor,30,""))
+UIBlank3 = button((20,410), (150,60), (location + "UIBtn.png",location + "UIBtnPressed.png", location + "UIBtnDisabled.png"),("", txtColor,30,""))
 UIButtons = [UIDevices, UICamera, UISettings, UIPair, UIBlank2, UIBlank3]
 
 #aduio info
@@ -925,14 +927,19 @@ def menu(disp):
         #disable audio controls if there is no conencted device
         if not deviceInfo["MAC"]:
             for cont in AudioControls:
-                cont.enable(False)
-            
-            UIPair.enable()
+                if cont.enabled:
+                    cont.enable(False)
+            if not UIPair.enabled:
+                print("enabling pair")
+                UIPair.enable()
 
         else:
             for cont in AudioControls:
-                cont.enable()
-            UIPair.enable(False)
+                if not cont.enabled:
+                    cont.enable()
+            if UIPair.enabled:
+                print("disabling pair")
+                UIPair.enable(False)
 
     #devices menu display
     elif subMenu == "devices":
@@ -1050,14 +1057,6 @@ def menu(disp):
     w,h = swipe1Data[0].size
     
     if mode == "menu":
-        #enable all the controls
-        for cont in AudioControls:
-            if cont.enabled == False:
-                cont.enable()
-        for btn in UIButtons:
-            if btn.enabled == False:
-                btn.enable()
-
         #if not undergoing the auto slide process to switch to camera
         if not changing:
             swiping, lastPos, swipeBtn1, x, moving = swipe(swipe1Data[0], swipe1Data[1], swipe1Data[2], mouse)
@@ -1096,28 +1095,27 @@ def menu(disp):
             disp3.blit(disp, (x,0))
             disp = disp3
 
-            volumeSlider.enable(False)
-            audioMute.enable(False)
-            audioPause.enable(False)
+
             for btn in UIButtons:
-                btn.enable(False)
-        else: #if not swiping re-enable the buttons
+                if btn.enabled:
+                    btn.enable(False)
+            for cont in AudioControls:
+                if cont.enabled:
+                    cont.enable(False)
+        else:
             for btn in UIButtons:
-                btn.enable()
+                if not btn.enabled:
+                    if btn.text[0] != "Pair":            
+                        btn.enable()
 
     else: #if the mode is not menu disable the audio controls so they dont accidently get pressed
         for cont in AudioControls:
-            cont.enable(False)
+            if cont.enabled:
+                cont.enable(False)
         for btn in UIButtons:
-            btn.enable(False)
+            if btn.enabled:
+                    btn.enable(False)
 
-    #if device is conencted disable pair button, otherwise enable it
-    if deviceInfo["MAC"]:
-        if UIPair.enabled:
-            UIPair.enable(False)
-    else:
-        if UIPair.enabled == False:
-            UIPair.enable()
 
     #return final display
     return disp
@@ -1254,7 +1252,7 @@ while True:
         display = cam(pygame.Surface(size))
 
     #render debug text
-    addDebug(dt, int(fps), timers, updatable, deviceInfo["MAC"])
+    addDebug(dt, int(fps), timers, updatable, deviceInfo["MAC"], UIPair.enabled)
     text = debugFont.render(debug, True, (0,255,0))
     display.blit(text, (0,0))
     debug = ""
