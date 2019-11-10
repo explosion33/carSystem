@@ -1230,9 +1230,10 @@ while True:
         if "Refresh" not in list(timers.keys()):
             addTimer("Refresh", 1000)
         if "Refresh" in k:
-            lastDevices = getLastDevices("bin/devices.txt")
-            deviceInfo = getInfo("bin/info.txt")
-            removeButtons = makeRemoveButtons()
+            if not deviceInfo["MAC"]:
+                lastDevices = getLastDevices("bin/devices.txt")
+                deviceInfo = getInfo("bin/info.txt")
+                removeButtons = makeRemoveButtons()
 
             print("GOT INFO")
             deviceText = "No Device"
