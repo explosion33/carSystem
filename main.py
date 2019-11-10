@@ -697,7 +697,12 @@ def removeDevice(MAC):
     MAC : bluetooth mac adress of device ("XX:XX:XX:XX:XX:XX")
     """
 
+    global lastDevices
+    global removeButtons
+
     os.system("sudo bash bin/removeDevice.sh " + MAC)
+    lastDevices = getLastDevices("bin/devices.txt")
+    removeButtons = makeRemoveButtons()
 
 def makeRemoveButtons(devices=None):
     """
@@ -1232,9 +1237,7 @@ while True:
         if "Refresh" not in list(timers.keys()):
             addTimer("Refresh", 2500)
         if "Refresh" in k:
-            #lastDevices = getLastDevices("bin/devices.txt")
             deviceInfo = getInfo("bin/info.txt")
-            #removeButtons = makeRemoveButtons()
 
             print("GOT INFO")
             deviceText = "No Device"
