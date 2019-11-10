@@ -757,6 +757,7 @@ mode = 'menu'                           #current mode
 subMenu = "main"                        #current submenu of menu mode
 debug = ""                              #content to be displayed at topleft of screen
 debugFont = pygame.font.SysFont("", 20) #font object for the debug text
+updatable = True
 
 #Pairing variables
 pairing = False
@@ -1222,18 +1223,18 @@ while True:
 
     #main menu screen
     if mode == 'menu':
+
         display = menu(pygame.Surface(size))
 
         k = countTimers(dt)
     
         #if refresh timer has finished refresh device variables
         if "Refresh" not in list(timers.keys()):
-            addTimer("Refresh", 1000)
+            addTimer("Refresh", 2500)
         if "Refresh" in k:
-            if not deviceInfo["MAC"]:
-                lastDevices = getLastDevices("bin/devices.txt")
-                deviceInfo = getInfo("bin/info.txt")
-                removeButtons = makeRemoveButtons()
+            #lastDevices = getLastDevices("bin/devices.txt")
+            deviceInfo = getInfo("bin/info.txt")
+            #removeButtons = makeRemoveButtons()
 
             print("GOT INFO")
             deviceText = "No Device"
@@ -1250,7 +1251,7 @@ while True:
         display = cam(pygame.Surface(size))
 
     #render debug text
-    addDebug(dt, int(fps), timers)
+    addDebug(dt, int(fps), timers, updatable, deviceInfo["MAC"])
     text = debugFont.render(debug, True, (0,255,0))
     display.blit(text, (0,0))
     debug = ""
