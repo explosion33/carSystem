@@ -1132,7 +1132,7 @@ def menu(disp):
             disp.blit(k, (30, a))
             a += 50
             
-        k = pygame.font.sysFont("", 20).render("V1.0, Made by Ethan Armstrong")
+        k = pygame.font.SysFont("", 20).render("V1.0, Made by Ethan Armstrong")
         w,h = k.get_size()
         w += 10
         h += 10
