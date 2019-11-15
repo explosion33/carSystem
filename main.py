@@ -854,8 +854,8 @@ AAfilledRoundedRect(audioBorder,audioBorder.get_rect(), accent,0.05)
 
 audioMute = toggleButton((230,420), (40,40), (location + "volumeOn.png", location + "volumeMute.png"), ("", txtColor,30,""), mute)
 audioPause = toggleButton((335,155),(170,170), (location + "play.png", location + "pause.png", location + "playDisabled.png", location + "pauseDisabled.png"), ("", txtColor,30,""), play)
-audioForward = button((520,203), (75,75), (location + "forward.png",location + "forwardPressed.png", location + "forwardDisabled.png"),("", txtColor,30,""), skip, True)
-audioBackward = button((245,203), (75,75), (location + "back.png",location + "backPressed.png", location + "backDisabled.png"),("", txtColor,30,""), skip, False)
+audioForward = button((520,203), (75,75), (location + "forward.png",location + "forwardPressed.png"),("", txtColor,30,""), skip, True)
+audioBackward = button((245,203), (75,75), (location + "back.png",location + "backPressed.png"),("", txtColor,30,""), skip, False)
 volumeSlider = slider((280, 420), (320, 30), (238,238,238),(location + "slide.png", location + "slidePressed.png"), [0,100], 50, chagneVolume)
 AudioControls = [audioMute, audioPause, volumeSlider, audioForward, audioBackward]
 
