@@ -5,9 +5,8 @@ from random import randint
 from pygame import gfxdraw
 import subprocess
 import ast
+from PIL import Image, ImageDraw
 
-#THIS IS A TEST COMMIT
-#I AM TESTING THE WORKFLOW FROM IPAD
 
 class button (object):
     """
@@ -191,6 +190,15 @@ class button (object):
 
 class toggleButton(button):
     def __init__(self, pos, size, color, text, function=None):
+        """
+        toggleButton(pos,size,color,text): a toggle button class, pretty self explanatory\n
+        pos      : (x,y)\n
+        size     : (w,h)\n
+        color    : (normal, click, disabled(optional)) can be (r,g,b) or a path to an image\n
+        text     : (content, color, size, font)\n
+        function : def (no paranthesis when passing it through)
+        """
+
         button.__init__(self, pos, size, color, text, function=None, args=None)
         self.state = True
         self.oneCLick = True
@@ -676,6 +684,27 @@ def readSettings():
     print(out)
     return out
 
+def applySettings():
+    """
+    applySettings(): writes the states of the buttons on the settings menu to settings.txt
+    """
+    global settChecks
+    global settings
+
+    titles = ["autoConnect", "darkMode", "debug", "record"]
+    states = []
+    for i in settChecks:
+        states.append(i.state)
+
+    out = {}
+    for i in range(len(titles)):
+        out[titles[i]] = states[i] 
+
+    f = open("settings.txt", "w")
+    f.write(str(out))
+    settings = out
+    
+
 def beginPair():
     """
     begin the pairing process
@@ -743,6 +772,12 @@ def skip(cond):
     else:
         os.system("dbus-send --system --print-reply --dest=org.bluez /org/bluez/hci0/dev_" + device + " org.bluez.MediaControl1.Previous")
 
+def reboot():
+    """
+    reboot(): reboots the system
+    """
+    os.system("sudo reboot")
+
 
 #initialize pygame
 pygame.init()
@@ -765,7 +800,7 @@ mode = 'menu'                           #current mode
 subMenu = "main"                        #current submenu of menu mode
 debug = ""                              #content to be displayed at topleft of screen
 debugFont = pygame.font.SysFont("", 20) #font object for the debug text
-updatable = True
+recordedImgs = []
 
 #Pairing variables
 pairing = False
@@ -789,7 +824,7 @@ timers = {}
 dt = 0                          #time between loop
 
 #definition of UI componetns
-if settings["mode"] == "dark":  #determine what images to use (light/dark)
+if settings["darkMode"]:  #determine what images to use (light/dark)
     location = "images/buttons/dark/"
     txtColor = (238,238,238)
     bckg = (24,30,39)
@@ -807,7 +842,7 @@ backBtn = button((20,410), (150,60), (location + "UIBtn.png",location + "UIBtnPr
 UIDevices = button((20,10), (150,60), (location + "UIBtn.png",location + "UIBtnPressed.png", location + "UIBtnDisabled.png"),("Devices", txtColor,30,""), changeMenu, "devices")
 UIPair = button((20,90), (150,60), (location + "UIBtn.png",location + "UIBtnPressed.png", location + "UIBtnDisabled.png"),("Pair", txtColor,30,""), changeMenu, "pair")
 UICamera = button((20,170), (150,60), (location + "UIBtn.png",location + "UIBtnPressed.png", location + "UIBtnDisabled.png"),("Camera", txtColor,30,""))
-UISettings = button((20,250), (150,60), (location + "UIBtn.png",location + "UIBtnPressed.png", location + "UIBtnDisabled.png"),("Settings", txtColor,30,""))
+UISettings = button((20,250), (150,60), (location + "UIBtn.png",location + "UIBtnPressed.png", location + "UIBtnDisabled.png"),("Settings", txtColor,30,""), changeMenu, "settings")
 UIBlank2 = button((20,330), (150,60), (location + "UIBtn.png",location + "UIBtnPressed.png", location + "UIBtnDisabled.png"),("", txtColor,30,""))
 UIBlank3 = button((20,410), (150,60), (location + "UIBtn.png",location + "UIBtnPressed.png", location + "UIBtnDisabled.png"),("", txtColor,30,""))
 UIButtons = [UIDevices, UICamera, UISettings, UIPair, UIBlank2, UIBlank3]
@@ -819,8 +854,8 @@ AAfilledRoundedRect(audioBorder,audioBorder.get_rect(), accent,0.05)
 
 audioMute = toggleButton((230,420), (40,40), (location + "volumeOn.png", location + "volumeMute.png"), ("", txtColor,30,""), mute)
 audioPause = toggleButton((335,155),(170,170), (location + "play.png", location + "pause.png", location + "playDisabled.png", location + "pauseDisabled.png"), ("", txtColor,30,""), play)
-audioForward = button((520,203), (75,75), (location + "forward.png",location + "forwardPressed.png"),("", txtColor,30,""), skip, True)
-audioBackward = button((245,203), (75,75), (location + "back.png",location + "backPressed.png"),("", txtColor,30,""), skip, False)
+audioForward = button((520,203), (75,75), (location + "forward.png",location + "forwardPressed.png", location + "forwardDisabled.png"),("", txtColor,30,""), skip, True)
+audioBackward = button((245,203), (75,75), (location + "back.png",location + "backPressed.png", location + "backDisabled.png"),("", txtColor,30,""), skip, False)
 volumeSlider = slider((280, 420), (320, 30), (238,238,238),(location + "slide.png", location + "slidePressed.png"), [0,100], 50, chagneVolume)
 AudioControls = [audioMute, audioPause, volumeSlider, audioForward, audioBackward]
 
@@ -844,6 +879,21 @@ DeviceButtons = [backBtn]
 #PAIR menu
 PAIRStart = button((size[0]/2 - size[0]/4,size[1]/2 - size[1]/4), (size[0]/2,size[1]/2), (bckg,bckg),("START PAIR", txtColor,70,""),beginPair)
 PairButtons = [backBtn, PAIRStart]
+
+#Settings menu
+switchSettings = True
+
+SETTAutoConnect = toggleButton((485,30), (35,35), (location + "check.png", location + "uncheck.png"),("", txtColor, 7, ""))
+SETTDarkMode = toggleButton((485,80), (35,35), (location + "check.png", location + "uncheck.png"),("", txtColor, 7, ""))
+SETTDebug = toggleButton((485,130), (35,35), (location + "check.png", location + "uncheck.png"),("", txtColor, 7, ""))
+SETTRecord = toggleButton((485,180), (35,35), (location + "check.png", location + "uncheck.png"),("", txtColor, 7, ""))
+SETTTEST3 = toggleButton((485,230), (35,35), (location + "check.png", location + "uncheck.png"),("", txtColor, 7, ""))
+SETTTEST4 = toggleButton((485,280), (35,35), (location + "check.png", location + "uncheck.png"),("", txtColor, 7, ""))
+
+SETTApply = button((20,330), (150,60), (location + "UIBtn.png",location + "UIBtnPressed.png", location + "UIBtnDisabled.png"),("Apply", txtColor,30,""), applySettings)
+SETTReboot = button((size[0]-170, 410), (150,60), (location + "UIBtnRed.png",location + "UIBtnRedPressed.png", location + "UIBtnDisabled.png"),("Reboot", txtColor,30,""), reboot)
+settButtons = [backBtn, SETTApply, SETTReboot]
+settChecks = [SETTAutoConnect, SETTDarkMode, SETTDebug, SETTRecord]
 
 
 #swipeBtns
@@ -884,19 +934,18 @@ def menu(disp):
     global pairing
     global pairStatus
     global prePairDevices
+
+    #settings Vars
+    global settButtons
+    global settChecks
+    global switchSettings
     
 
     disp.fill(bckg)
 
     #default menu display
     if subMenu == "main":
-        #try to connect to devices (auto connect)
-        if settings["autoConnect"] == "on":
-            if not deviceInfo["MAC"]:
-                for MAC in lastDevices:
-                    cmd = "bash bin/autoConnect.sh " + MAC
-                    print(cmd)
-                    os.system(cmd)
+        switchSettings = True
 
         #audio options box
         disp.blit(audioBorder, (220,10))
@@ -1041,6 +1090,49 @@ def menu(disp):
                 PAIRStart.text = ("START PAIR", PAIRStart.text[1], PAIRStart.text[2], PAIRStart.text[3],)
                 PAIRStart.draw()
 
+    #settings menu display
+    elif subMenu == "settings":
+        if switchSettings:
+            switchSettings = False
+            states = []
+            for key, item in settings.items():
+                states.append(item)
+            print("states", states)
+            for i in range(len(settChecks)):
+                settChecks[i].state = states[i]
+                if states[i]:
+                    settChecks[i].useColor = 0
+                else:
+                    settChecks[i].useColor = 1
+
+                settChecks[i].draw()
+
+        for btn in settButtons:
+            a,b = btn.loop(click)
+            disp.blit(a,b)
+
+        for btn in settChecks:
+            a,b = btn.loop(click)
+            disp.blit(a,b)
+
+        font = pygame.font.SysFont("", 30)
+
+        descriptions = [
+            "Auto connect to paired devices when in range:",
+            "Enable Dark Mode:",
+            "Enable Debug Status Text:",
+            "Enable Recording from the webcam:",
+            "Test:",
+            "Test:",
+                        ]
+
+        a = 30
+        for i in descriptions:
+            k = font.render(i, True, txtColor)
+            disp.blit(k, (30, a))
+            a += 50
+        
+
     #if not in the pairing menu disable pair mode and pair status text
     if subMenu != "pair":
         if pairing:
@@ -1086,7 +1178,7 @@ def menu(disp):
 
         #if the user is swiping add one screen onto the other
         if moving:
-            disp2 = cam(pygame.Surface(size))
+            disp2, img = cam(pygame.Surface(size))
             disp3 = pygame.Surface(size)
             disp3.blit(disp2,(0,0))
 
@@ -1125,6 +1217,7 @@ def cam(disp):
     #get camera image
     disp.fill(bckg)
     disp = camera.get_image()
+    img = disp
     cameraSize = camera.get_size()
 
     #if camera does not fit on the display resize it
@@ -1192,7 +1285,7 @@ def cam(disp):
         
         #disp.blit(a,b)
 
-    return disp
+    return disp, img
 
 #main loop
 
@@ -1247,15 +1340,33 @@ while True:
                 else:
                     deviceText += str(deviceInfo["Name"])
 
+        #try to connect to devices (auto connect)
+        if settings["autoConnect"]:
+            if not deviceInfo["MAC"]:
+                #if refresh timer has finished refresh device variables
+                if "connect" not in list(timers.keys()):
+                    addTimer("connect", 1000)
+                if "connect" in k:
+                    for MAC in lastDevices:
+                        cmd = "bash bin/autoConnect.sh " + MAC
+                        print(cmd)
+                        os.system(cmd)
 
     #camera screen
     elif mode == "cam":
-        display = cam(pygame.Surface(size))
+        display, img = cam(pygame.Surface(size))
+
+        if settings["record"]:
+            pil_string_image = pygame.image.tostring(img,"RGBA",False)
+            im = Image.frombytes("RGBA",(800,448),pil_string_image)
+            recordedImgs.append(im)
 
     #render debug text
-    addDebug(dt, int(fps), timers, updatable, deviceInfo["MAC"], UIPair.enabled)
-    text = debugFont.render(debug, True, (0,255,0))
-    display.blit(text, (0,0))
+    addDebug(dt, int(fps), timers)
+
+    if settings["debug"]:
+        text = debugFont.render(debug, True, (0,255,0))
+        display.blit(text, (0,0))
     debug = ""
 
     #pygame.draw.rect(display, (255,0,0,125), volumeSlider.rect)
