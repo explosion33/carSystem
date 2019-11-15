@@ -891,7 +891,7 @@ SETTTEST3 = toggleButton((485,230), (35,35), (location + "check.png", location +
 SETTTEST4 = toggleButton((485,280), (35,35), (location + "check.png", location + "uncheck.png"),("", txtColor, 7, ""))
 
 SETTApply = button((20,330), (150,60), (location + "UIBtn.png",location + "UIBtnPressed.png", location + "UIBtnDisabled.png"),("Apply", txtColor,30,""), applySettings)
-SETTReboot = button((size[0]-170, 410), (150,60), (location + "UIBtnRed.png",location + "UIBtnRedPressed.png", location + "UIBtnDisabled.png"),("Reboot", txtColor,30,""), reboot)
+SETTReboot = button((190, 410), (150,60), (location + "UIBtnRed.png",location + "UIBtnRedPressed.png", location + "UIBtnDisabled.png"),("Reboot", txtColor,30,""), reboot)
 settButtons = [backBtn, SETTApply, SETTReboot]
 settChecks = [SETTAutoConnect, SETTDarkMode, SETTDebug, SETTRecord]
 
@@ -1131,6 +1131,12 @@ def menu(disp):
             k = font.render(i, True, txtColor)
             disp.blit(k, (30, a))
             a += 50
+            
+        k = pygame.font.sysFont("", 20).render("V1.0, Made by Ethan Armstrong")
+        w,h = k.get_size()
+        w += 10
+        h += 10
+        disp.blit(k, (size[0]-w, size[1]-h))
         
 
     #if not in the pairing menu disable pair mode and pair status text
