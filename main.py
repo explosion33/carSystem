@@ -779,10 +779,16 @@ def reboot():
     os.system("sudo reboot")
 
 
+settings = readSettings()               #seetings dictionary
+
 #initialize pygame
 pygame.init()
 size = (800,480)
-screen = pygame.display.set_mode(size, pygame.FULLSCREEN)                   #visible display
+if settings["full"]:
+	screen = pygame.display.set_mode(size, pygame.FULLSCREEN)                 #visible display
+else:
+	screen = pygame.display.set_mode(size)                 										#visible display
+	
 display = pygame.Surface(size)                                              #working display (gets added to visible display) (can be useful for scaling entire display)
 pygame.mouse.set_cursor((8,8),(0,0),(0,0,0,0,0,0,0,0),(0,0,0,0,0,0,0,0))    #makes cursor invisible whilst still allowing for its functionality
 
@@ -792,7 +798,6 @@ camera = pygame.camera.Camera('/dev/video0', size)
 camera.start()
 
 #create vaious variables
-settings = readSettings()               #seetings dictionary
 
 mouse = pygame.Rect(0, 0, 2, 2)         #mouse rectangle for collison
 click = False                           #stores state of mouse click
