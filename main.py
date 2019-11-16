@@ -691,7 +691,7 @@ def applySettings():
     global settChecks
     global settings
 
-    titles = ["autoConnect", "darkMode", "debug", "record"]
+    titles = ["autoConnect", "darkMode", "debug", "record", "full"]
     states = []
     for i in settChecks:
         states.append(i.state)
@@ -887,13 +887,13 @@ SETTAutoConnect = toggleButton((485,30), (35,35), (location + "check.png", locat
 SETTDarkMode = toggleButton((485,80), (35,35), (location + "check.png", location + "uncheck.png"),("", txtColor, 7, ""))
 SETTDebug = toggleButton((485,130), (35,35), (location + "check.png", location + "uncheck.png"),("", txtColor, 7, ""))
 SETTRecord = toggleButton((485,180), (35,35), (location + "check.png", location + "uncheck.png"),("", txtColor, 7, ""))
-SETTTEST3 = toggleButton((485,230), (35,35), (location + "check.png", location + "uncheck.png"),("", txtColor, 7, ""))
+SETTFull = toggleButton((485,230), (35,35), (location + "check.png", location + "uncheck.png"),("", txtColor, 7, ""))
 SETTTEST4 = toggleButton((485,280), (35,35), (location + "check.png", location + "uncheck.png"),("", txtColor, 7, ""))
 
 SETTApply = button((20,330), (150,60), (location + "UIBtn.png",location + "UIBtnPressed.png", location + "UIBtnDisabled.png"),("Apply", txtColor,30,""), applySettings)
 SETTReboot = button((190, 410), (150,60), (location + "UIBtnRed.png",location + "UIBtnRedPressed.png", location + "UIBtnDisabled.png"),("Reboot", txtColor,30,""), reboot)
 settButtons = [backBtn, SETTApply, SETTReboot]
-settChecks = [SETTAutoConnect, SETTDarkMode, SETTDebug, SETTRecord]
+settChecks = [SETTAutoConnect, SETTDarkMode, SETTDebug, SETTRecord, SETTFull]
 
 
 #swipeBtns
@@ -1122,7 +1122,7 @@ def menu(disp):
             "Enable Dark Mode:",
             "Enable Debug Status Text:",
             "Enable Recording from the webcam:",
-            "Test:",
+            "Enable Full Screen Mode (Recommended):",
             "Test:",
                         ]
 
