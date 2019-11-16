@@ -1,1 +1,1 @@
-{"autoConnect": False,"darkMode": True, "debug": True, "record": False}
+{"autoConnect": False,"darkMode": True, "debug": True, "record": False, "full": True}
