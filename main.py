@@ -1378,7 +1378,7 @@ while True:
             recordedImgs.append(im)
 
     #render debug text
-    addDebug(dt, int(fps), timers)
+    addDebug(dt, int(fps), timers, mode)
 
     if settings["debug"]:
         text = debugFont.render(debug, True, (0,255,0))
