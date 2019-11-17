@@ -1191,7 +1191,9 @@ def menu(disp):
 
         #if the user is swiping add one screen onto the other
         if moving:
+        	print("moving")
             disp2, img = cam(pygame.Surface(size))
+            print("got cam")
             disp3 = pygame.Surface(size)
             disp3.blit(disp2,(0,0))
 
@@ -1208,6 +1210,7 @@ def menu(disp):
             for cont in AudioControls:
                 if cont.enabled:
                     cont.enable(False)
+            print("enabled buttons")
         else:
             for btn in UIButtons:
                 if not btn.enabled:
