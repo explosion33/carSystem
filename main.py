@@ -1234,6 +1234,7 @@ def cam(disp):
     disp.fill(bckg)
     disp = camera.get_image()
     img = disp
+    print("got camera image")
     cameraSize = camera.get_size()
 
     #if camera does not fit on the display resize it
@@ -1255,8 +1256,7 @@ def cam(disp):
         disp = pygame.Surface(size)
         disp.blit(s, (0,0))
     disp = pygame.transform.flip(disp, True, False)
-
-
+    print("transformed cam")
     #SWIPE HANDLING SAME AS MENU
     global swipe2Data
     global changing
