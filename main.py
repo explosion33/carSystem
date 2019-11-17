@@ -1230,6 +1230,7 @@ def menu(disp):
     return disp
 
 def cam(disp):
+	print("camera is called")
     #get camera image
     disp.fill(bckg)
     disp = camera.get_image()
