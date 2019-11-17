@@ -1191,7 +1191,7 @@ def menu(disp):
 
         #if the user is swiping add one screen onto the other
         if moving:
-        	print("moving")
+            print("moving")
             disp2, img = cam(pygame.Surface(size))
             print("got cam")
             disp3 = pygame.Surface(size)
