@@ -414,6 +414,7 @@ def initSwipe():
     """
     global swipe1Data
     swipe1Data = [swipe1Data[0] ,True, mouse.centerx]
+    print(swipe1Data)
 
 def initSwipe2():
     """
@@ -477,6 +478,7 @@ def swipe(btn, swiping, lastPos, mouse, direction="left"):
     w,h = btn.size
     if direction == "left":
         if swiping:
+            print("swiping")
             moving = True
             tx = mouse.center[0]
 
