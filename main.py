@@ -1235,7 +1235,7 @@ def cam(disp):
     disp.fill(bckg)
     img = disp
     que = camera.query_image()
-    print(que)
+    print(que, camera.get_controls(), camera.get_size())
     if que:
 	    disp = camera.get_image()
 	    img = disp
