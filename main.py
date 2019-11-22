@@ -1233,31 +1233,35 @@ def cam(disp):
     print("camera is called")
     #get camera image
     disp.fill(bckg)
-    disp = camera.get_image()
     img = disp
-    print("got camera image")
-    cameraSize = camera.get_size()
-
-    #if camera does not fit on the display resize it
-    if cameraSize != size:
-        if cameraSize[0] != size[0]:
-            x = size[0]/cameraSize[0]
-            y = cameraSize[1] * x
-            x = size[0]
-        else:
-            y = size[1]/cameraSize[1]
-            x = size[0] * y
-            y = size[1]
-        x = int(x)
-        y = int(y)
-        
-        #rescale surface and add it to display to avoid mismatch in surface sizes
-        s = pygame.Surface((x,y))
-        s = pygame.transform.scale(disp,(x,y))
-        disp = pygame.Surface(size)
-        disp.blit(s, (0,0))
-    disp = pygame.transform.flip(disp, True, False)
-    print("transformed cam")
+    que = camera.query_image()
+    print(que)
+    if que:
+	    disp = camera.get_image()
+	    img = disp
+	    print("got camera image")
+	    cameraSize = camera.get_size()
+	
+	    #if camera does not fit on the display resize it
+	    if cameraSize != size:
+	        if cameraSize[0] != size[0]:
+	            x = size[0]/cameraSize[0]
+	            y = cameraSize[1] * x
+	            x = size[0]
+	        else:
+	            y = size[1]/cameraSize[1]
+	            x = size[0] * y
+	            y = size[1]
+	        x = int(x)
+	        y = int(y)
+	        
+	        #rescale surface and add it to display to avoid mismatch in surface sizes
+	        s = pygame.Surface((x,y))
+	        s = pygame.transform.scale(disp,(x,y))
+	        disp = pygame.Surface(size)
+	        disp.blit(s, (0,0))
+	    disp = pygame.transform.flip(disp, True, False)
+	    print("transformed cam")
     #SWIPE HANDLING SAME AS MENU
     global swipe2Data
     global changing
