@@ -797,6 +797,7 @@ pygame.mouse.set_cursor((8,8),(0,0),(0,0,0,0,0,0,0,0),(0,0,0,0,0,0,0,0))    #mak
 #initialize pygames camera library
 pygame.camera.init()
 camera = pygame.camera.Camera('/dev/video0', size)
+addDebug(size)
 camera.start()
 
 #create vaious variables
