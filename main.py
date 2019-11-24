@@ -797,7 +797,6 @@ pygame.mouse.set_cursor((8,8),(0,0),(0,0,0,0,0,0,0,0),(0,0,0,0,0,0,0,0))    #mak
 #initialize pygames camera library
 pygame.camera.init()
 camera = pygame.camera.Camera('/dev/video0', size)
-addDebug(size)
 camera.start()
 
 #create vaious variables
@@ -809,6 +808,8 @@ subMenu = "main"                        #current submenu of menu mode
 debug = ""                              #content to be displayed at topleft of screen
 debugFont = pygame.font.SysFont("", 20) #font object for the debug text
 recordedImgs = []
+
+addDebug(size)
 
 #Pairing variables
 pairing = False
