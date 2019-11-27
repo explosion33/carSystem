@@ -780,6 +780,10 @@ def reboot():
     """
     os.system("sudo reboot")
 
+#Update camera driver
+os.system("sudo rmmod uvcvideo")
+os.system("sudo modprobe uvcvideo nodrop=1 timout=6000 quirks=640")
+
 
 settings = readSettings()               #seetings dictionary
 
