@@ -6,6 +6,8 @@ from pygame import gfxdraw
 import subprocess
 import ast
 from PIL import Image, ImageDraw
+import cv2
+import numpy as np
 
 
 class button (object):
@@ -798,10 +800,13 @@ else:
 display = pygame.Surface(size)                                              #working display (gets added to visible display) (can be useful for scaling entire display)
 pygame.mouse.set_cursor((8,8),(0,0),(0,0,0,0,0,0,0,0),(0,0,0,0,0,0,0,0))    #makes cursor invisible whilst still allowing for its functionality
 
-#initialize pygames camera library
-pygame.camera.init()
-camera = pygame.camera.Camera('/dev/video0', size)
-camera.start()
+#initialize opencv camera
+cap = cv2.VideoCapture(0)
+
+if (cap.isOpened() == False):
+	print("unable to read camera feed")
+	
+
 
 #create vaious variables
 
@@ -1198,7 +1203,7 @@ def menu(disp):
         #if the user is swiping add one screen onto the other
         if moving:
             print("moving")
-            disp2, img = cam(pygame.Surface(size))
+            disp2 = cam(pygame.Surface(size))
             print("got cam")
             disp3 = pygame.Surface(size)
             disp3.blit(disp2,(0,0))
@@ -1237,30 +1242,14 @@ def menu(disp):
 
 def cam(disp):
     #get camera image
-    disp.fill(bckg)
-    disp = camera.get_image()
-    img = disp
-    cameraSize = camera.get_size()
-
-    #if camera does not fit on the display resize it
-    if cameraSize != size:
-        if cameraSize[0] != size[0]:
-            x = size[0]/cameraSize[0]
-            y = cameraSize[1] * x
-            x = size[0]
-        else:
-            y = size[1]/cameraSize[1]
-            x = size[0] * y
-            y = size[1]
-        x = int(x)
-        y = int(y)
-        
-        #rescale surface and add it to display to avoid mismatch in surface sizes
-        s = pygame.Surface((x,y))
-        s = pygame.transform.scale(disp,(x,y))
-        disp = pygame.Surface(size)
-        disp.blit(s, (0,0))
-        
+    ret, frame = cap.read()
+    
+    if ret == True:
+    	res,bts = cv2.imencode('.jpg', frame)
+    	bts = bts.tostring()
+    	disp = pygame.image.fromstring(bts,res,".png")
+    
+    
     if settings["flip"]:
     	disp = pygame.transform.flip(disp, True, False)
     
@@ -1273,7 +1262,7 @@ def cam(disp):
     a,b = swipe2Data[0].loop(click)
     w,h = swipe2Data[0].size
     
-    if mode == "cam" and False:
+    if mode == "cam":
         if not changing:
             swiping, lastPos, swipeBtn1, x, moving = swipe(swipe2Data[0], swipe2Data[1], swipe2Data[2], mouse, "right")
             swipe2Data = [swipeBtn1, swiping, lastPos]
@@ -1377,12 +1366,7 @@ while True:
 
     #camera screen
     elif mode == "cam":
-        display, img = cam(pygame.Surface(size))
-
-        if settings["record"]:
-            pil_string_image = pygame.image.tostring(img,"RGBA",False)
-            im = Image.frombytes("RGBA",(800,448),pil_string_image)
-            recordedImgs.append(im)
+        display= cam(pygame.Surface(size))
 
     #render debug text
     addDebug(dt, int(fps), timers, mode)
