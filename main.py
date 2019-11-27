@@ -1295,7 +1295,7 @@ def cam(disp):
         
         #disp.blit(a,b)
 
-    return disp, img
+    return disp
 
 #main loop
 
