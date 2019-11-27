@@ -1245,7 +1245,7 @@ def cam(disp):
     ret, frame = cap.read()
     
     if ret == True:  	
-    	disp = pygame.image.frombuffer(frame.tostring(), image.shape[1::-1], "RGB")
+    	disp = pygame.image.frombuffer(frame.tostring(), frame.shape[1::-1], "RGB")
     
     
     if settings["flip"]:
