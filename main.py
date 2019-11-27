@@ -693,7 +693,7 @@ def applySettings():
     global settChecks
     global settings
 
-    titles = ["autoConnect", "darkMode", "debug", "record", "full"]
+    titles = ["autoConnect", "darkMode", "debug", "record", "full", "flip"]
     states = []
     for i in settChecks:
         states.append(i.state)
@@ -901,12 +901,12 @@ SETTDarkMode = toggleButton((485,80), (35,35), (location + "check.png", location
 SETTDebug = toggleButton((485,130), (35,35), (location + "check.png", location + "uncheck.png"),("", txtColor, 7, ""))
 SETTRecord = toggleButton((485,180), (35,35), (location + "check.png", location + "uncheck.png"),("", txtColor, 7, ""))
 SETTFull = toggleButton((485,230), (35,35), (location + "check.png", location + "uncheck.png"),("", txtColor, 7, ""))
-SETTTEST4 = toggleButton((485,280), (35,35), (location + "check.png", location + "uncheck.png"),("", txtColor, 7, ""))
+SETTFlip = toggleButton((485,280), (35,35), (location + "check.png", location + "uncheck.png"),("", txtColor, 7, ""))
 
 SETTApply = button((20,330), (150,60), (location + "UIBtn.png",location + "UIBtnPressed.png", location + "UIBtnDisabled.png"),("Apply", txtColor,30,""), applySettings)
 SETTReboot = button((190, 410), (150,60), (location + "UIBtnRed.png",location + "UIBtnRedPressed.png", location + "UIBtnDisabled.png"),("Reboot", txtColor,30,""), reboot)
 settButtons = [backBtn, SETTApply, SETTReboot]
-settChecks = [SETTAutoConnect, SETTDarkMode, SETTDebug, SETTRecord, SETTFull]
+settChecks = [SETTAutoConnect, SETTDarkMode, SETTDebug, SETTRecord, SETTFull, SETTFlip]
 
 
 #swipeBtns
@@ -1136,7 +1136,7 @@ def menu(disp):
             "Enable Debug Status Text:",
             "Enable Recording from the webcam:",
             "Enable Full Screen Mode (Recommended):",
-            "Test:",
+            "Flip Camera Images horizantaly:",
                         ]
 
         a = 30
@@ -1260,7 +1260,9 @@ def cam(disp):
         s = pygame.transform.scale(disp,(x,y))
         disp = pygame.Surface(size)
         disp.blit(s, (0,0))
-    disp = pygame.transform.flip(disp, True, False)
+        
+    if settings["flip"]:
+    	disp = pygame.transform.flip(disp, True, False)
     
     #SWIPE HANDLING SAME AS MENU
     global swipe2Data
