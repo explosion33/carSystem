@@ -1245,9 +1245,10 @@ def cam(disp):
     ret, frame = cap.read()
     
     if ret == True:
-    	res,bts = cv2.imencode('.jpg', frame)
+    	_,bts = cv2.imencode('.jpg', frame)
     	bts = bts.tostring()
-    	disp = pygame.image.fromstring(bts,res,".png")
+    	
+    	disp = pygame.image.fromstring(bts,(cap.get(3), cap.get(4)),".png")
     
     
     if settings["flip"]:
