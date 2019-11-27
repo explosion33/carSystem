@@ -1243,7 +1243,7 @@ def cam(disp):
     cameraSize = camera.get_size()
 
     #if camera does not fit on the display resize it
-    if cameraSize != size and False:
+    if cameraSize != size:
         if cameraSize[0] != size[0]:
             x = size[0]/cameraSize[0]
             y = cameraSize[1] * x
@@ -1273,7 +1273,7 @@ def cam(disp):
     a,b = swipe2Data[0].loop(click)
     w,h = swipe2Data[0].size
     
-    if mode == "cam":
+    if mode == "cam" and False:
         if not changing:
             swiping, lastPos, swipeBtn1, x, moving = swipe(swipe2Data[0], swipe2Data[1], swipe2Data[2], mouse, "right")
             swipe2Data = [swipeBtn1, swiping, lastPos]
