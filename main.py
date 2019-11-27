@@ -1243,7 +1243,7 @@ def cam(disp):
     cameraSize = camera.get_size()
 
     #if camera does not fit on the display resize it
-    if cameraSize != size:
+    if cameraSize != size and False:
         if cameraSize[0] != size[0]:
             x = size[0]/cameraSize[0]
             y = cameraSize[1] * x
