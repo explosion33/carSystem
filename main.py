@@ -6,7 +6,13 @@ from pygame import gfxdraw
 import subprocess
 import ast
 from PIL import Image, ImageDraw
-import cv2
+
+cvInstalled = False
+try:
+    import cv2
+    cvInstalled = True
+except:
+    print("cv2 not found Camera will not be initialized")
 import numpy as np
 
 
@@ -801,10 +807,11 @@ display = pygame.Surface(size)                                              #wor
 pygame.mouse.set_cursor((8,8),(0,0),(0,0,0,0,0,0,0,0),(0,0,0,0,0,0,0,0))    #makes cursor invisible whilst still allowing for its functionality
 
 #initialize opencv camera
-cap = cv2.VideoCapture(0)
+if cvInstalled:
+    cap = cv2.VideoCapture(0)
 
-if (cap.isOpened() == False):
-	print("unable to read camera feed")
+    if (cap.isOpened() == False):
+	    print("unable to read camera feed")
 	
 
 
@@ -1242,15 +1249,16 @@ def menu(disp):
 
 def cam(disp):
     #get camera image
-    ret, frame = cap.read()
-    
-    if ret == True:  	
-    	disp = pygame.image.frombuffer(frame.tostring(), frame.shape[1::-1], "RGB")
-    
-    
-    if settings["flip"]:
-    	disp = pygame.transform.flip(disp, True, False)
-    
+    if cvInstalled:
+        ret, frame = cap.read()
+        
+        if ret == True:  	
+            disp = pygame.image.frombuffer(frame.tostring(), frame.shape[1::-1], "RGB")
+        
+        
+        if settings["flip"]:
+            disp = pygame.transform.flip(disp, True, False)
+        
     #SWIPE HANDLING SAME AS MENU
     global swipe2Data
     global changing
