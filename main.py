@@ -848,6 +848,8 @@ clock = pygame.time.Clock()
 timers = {}
 dt = 0                          #time between loop
 
+print("creating UI components")
+
 #definition of UI componetns
 if settings["darkMode"]:  #determine what images to use (light/dark)
     location = "images/buttons/dark/"
@@ -1307,7 +1309,7 @@ def cam(disp):
 
 #main loop
 
-
+print("beginning")
 while True:
     dt = clock.tick()
     fps = clock.get_fps()
