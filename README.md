@@ -25,19 +25,19 @@ numpy ```pip3 install numpy```
 ## Instalation
 Plug in the following:
 
-    connect ethernet (or wifi later)
-  
-    keyboard
-  
-    monitor: [hdmi touchscreen](https://www.amazon.com/Elecrow-Capacitive-interface-Supports-Raspberry/dp/B07FDYXPT7/ref=asc_df_B07FDYXPT7/?tag=hyprod-20&linkCode=df0&hvadid=319216790773&hvpos=1o4&hvnetw=g&hvrand=834440554194434038&hvpone=&hvptwo=&hvqmt=&hvdev=c&hvdvcmdl=&hvlocint=&hvlocphy=&hvtargid=pla-624150239484&psc=1)
+*connect ethernet (or wifi later)
+
+*keyboard
+
+*monitor: [hdmi touchscreen](https://www.amazon.com/Elecrow-Capacitive-interface-Supports-Raspberry/dp/B07FDYXPT7/ref=asc_df_B07FDYXPT7/?tag=hyprod-20&linkCode=df0&hvadid=319216790773&hvpos=1o4&hvnetw=g&hvrand=834440554194434038&hvpone=&hvptwo=&hvqmt=&hvdev=c&hvdvcmdl=&hvlocint=&hvlocphy=&hvtargid=pla-624150239484&psc=1)
 
 
-  
-    microSD with raspbian
-  
-    usb (to migrate boot to)
-    
-    power cord
+
+*microSD with raspbian
+
+*usb (to migrate boot to)
+
+*power cord
 
 turn on the raspberrypi and continue through the setup page until it propts you to restart, do this
 
