@@ -794,10 +794,10 @@ def connect(MAC):
 	"""
 	
 	os.system("bluetoothctl << EOF")
-    os.system("connect " + MAC)
-    os.system("exit")
-    os.system(EOF)
-    print("process done, attempted to conenct to: " + MAC)
+	os.system("connect " + MAC)
+	os.system("exit")
+	os.system(EOF)
+	print("process done, attempted to conenct to: " + MAC)
 
 #Update camera driver
 os.system("sudo rmmod uvcvideo")
