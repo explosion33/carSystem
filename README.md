@@ -86,7 +86,27 @@ system-alias <Alias Here>
 exit
 ```
 
-you can now pair your device in the pair menu of ```main.py``` and test for audio
+check to see if the bluetooth is working buy running
+
+```sudo hciconfig hci0 piscan```
+
+the device with the alias should appear under your bluetooth section
+
+if the the device does not show up on an iphone you have to do the following
+
+got to a text to hex converter and convert the name you want to show up into hex
+
+for example: ```Car System``` is ```4361722053797374656d```
+
+the max character limit for the hex is 22
+
+if the hex does not reach 22 you need to pad the end with 0's
+
+```4361722053797374656d``` has only 20 characters so you make it ```4361722053797374656d00```
+
+then enter ```sudo /bin/hciconfig hci0 inqdata "0c09[hex here]020a00091002006b1d460217050d03001801180e110c1115110b1100"``` and add your hex code where it says hex here (remove the parenthesis)
+
+this should make it discoverable
 
 IF AUDIO DOES NOT PLAY MAKE SURE HEADPHONES/SPEAKERS ARE PLUGGED IN
 
