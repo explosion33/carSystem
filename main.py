@@ -1379,8 +1379,8 @@ while True:
                     addTimer("connect", 1000)
                 if "connect" in k:
                     for MAC in lastDevices:
-						p = Process(target=connect, args=(MAC,))
-						p.start()
+                        p = Process(target=connect, args=(MAC,))
+                        p.start()
 
 
     #camera screen
