@@ -1,11 +1,10 @@
 import sys, pygame, os
-import pygame.camera
 from pygame.locals import *
 from random import randint
 from pygame import gfxdraw
 import subprocess
 import ast
-from PIL import Image, ImageDraw
+from multiprocessing import Process
 
 cvInstalled = False
 try:
@@ -788,6 +787,18 @@ def reboot():
     """
     os.system("sudo reboot")
 
+def connect(MAC):
+	"""
+	conenct(MAC): connects via bluetooth to the specified MAC address
+	MAC : A MAC address (AA:BB:CC:DD:EE:FF)
+	"""
+	
+	os.system("bluetoothctl << EOF")
+    os.system("connect " + MAC)
+    os.system("exit")
+    os.system(EOF)
+    print("process done, attempted to conenct to: " + MAC)
+
 #Update camera driver
 os.system("sudo rmmod uvcvideo")
 os.system("sudo modprobe uvcvideo nodrop=1 timout=6000 quirks=640")
@@ -1368,9 +1379,9 @@ while True:
                     addTimer("connect", 1000)
                 if "connect" in k:
                     for MAC in lastDevices:
-                        cmd = "bash bin/autoConnect.sh " + MAC
-                        print(cmd)
-                        os.system(cmd)
+						p = Process(target=connect, args=(MAC,))
+						p.start()
+
 
     #camera screen
     elif mode == "cam":
