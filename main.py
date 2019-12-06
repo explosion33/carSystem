@@ -581,8 +581,14 @@ def addDebug(*args):
         debug += ", "
 
 def getInfo(path):
+	os.system("bluetoothctl << EOF >" + path)
+	os.system("info")
+	os.system("exit")
+	os.system("EOF")
+
+def readInfo(path):
     """
-    getInfo(path): get bluetooth device info from a txt file\n
+    readInfo(path): get bluetooth device info from a txt file\n
     path : a path to a text file\n
     returns dictionary with ["MAC", "Name", "Alias", "Icon", "Paired", "Trusted"]
     """
@@ -595,8 +601,7 @@ def getInfo(path):
         "Trusted": None,
     }
     keys = list(out.keys())
-    info = open(path,"w").close()
-    os.system("bash bin/deviceInfo.sh")
+
     info = open(path, "r")
     for line in info:
         if "Device" in line:
@@ -851,7 +856,7 @@ changing = False
 #system variables
 volume = 50
 lastVolume = 50                                 #used to determine if the volume needs to be updated
-deviceInfo = getInfo("bin/info.txt")            #bluetooth device info
+deviceInfo = readInfo("bin/info.txt")            #bluetooth device info
 lastDevices = getLastDevices("bin/devices.txt") #get previously paired devices
 
 #initialize clock
@@ -1360,7 +1365,7 @@ while True:
         if "Refresh" not in list(timers.keys()):
             addTimer("Refresh", 2500)
         if "Refresh" in k:
-            deviceInfo = getInfo("bin/info.txt")
+            deviceInfo = readInfo("bin/info.txt")
 
             print("GOT INFO")
             deviceText = "No Device"
@@ -1370,6 +1375,11 @@ while True:
                     deviceText += str(deviceInfo["Alias"])
                 else:
                     deviceText += str(deviceInfo["Name"])
+        if "getDevices" not in list(timers.keys()):
+        	addTimer("getDevices", 500)
+        if "getDevices" in k:
+        	p = Process(target=getInfo, args=("bin/info.txt"))
+        	p.start()
 
         #try to connect to devices (auto connect)
         if settings["autoConnect"]:
