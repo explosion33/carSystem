@@ -23,21 +23,23 @@ numpy ```pip3 install numpy```
 [opencv](https://github.com/Llibyddap/RPi_CV2) (will be installed later)
   
 ## Instalation
-To install download the files onto a raspberry pi 4 configured with an [hdmi touchscreen](https://www.amazon.com/Elecrow-Capacitive-interface-Supports-Raspberry/dp/B07FDYXPT7/ref=asc_df_B07FDYXPT7/?tag=hyprod-20&linkCode=df0&hvadid=319216790773&hvpos=1o4&hvnetw=g&hvrand=834440554194434038&hvpone=&hvptwo=&hvqmt=&hvdev=c&hvdvcmdl=&hvlocint=&hvlocphy=&hvtargid=pla-624150239484&psc=1)
-
 Plug in the following:
 
-  connect ethernet (or wifi later)
+    connect ethernet (or wifi later)
   
-  keyboard
+    keyboard
   
-  monitor
-  
-  microSD with raspbian
-  
-  usb (to migrate boot to)
+    monitor: [hdmi touchscreen](https://www.amazon.com/Elecrow-Capacitive-interface-Supports-Raspberry/dp/B07FDYXPT7/ref=asc_df_B07FDYXPT7/?tag=hyprod-20&linkCode=df0&hvadid=319216790773&hvpos=1o4&hvnetw=g&hvrand=834440554194434038&hvpone=&hvptwo=&hvqmt=&hvdev=c&hvdvcmdl=&hvlocint=&hvlocphy=&hvtargid=pla-624150239484&psc=1)
 
-continue through the setup page until it propts you to restart, do this
+
+  
+    microSD with raspbian
+  
+    usb (to migrate boot to)
+    
+    power cord
+
+turn on the raspberrypi and continue through the setup page until it propts you to restart, do this
 
 then run the [opencv](https://github.com/Llibyddap/RPi_CV2) script from above. This will migrate the root directory to the flashdrive and then install opencv (It will take around 3 hours to complete)
 
