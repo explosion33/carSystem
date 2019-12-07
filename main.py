@@ -681,11 +681,23 @@ def changeMenu(submenu):
     subMenu = submenu
     print("changing", submenu)
 
+def disconenctDevice():
+    """
+    disconenctDevice(): disconnects the current bluetooth device
+    """
+    os.system("bluetoothctl << EOF")
+    os.system("disconnect")
+    os.system("exit")
+    os.system("EOF")
+
 def disconnect():
-    """
-    disconenct(): disconnects the current bluetooth device
-    """
-    os.system("bash bin/disconnect.sh")
+	"""
+	disconnect(): function to create a sub process to remove the device \n
+	calls disconnectDevice()
+	"""
+	
+	p = Process(target=disconenctDevice)
+	p.start()
 
 def readSettings():
     """
@@ -1121,7 +1133,8 @@ def menu(disp):
                 if device not in prePairDevices:
                     pairStatus = "pairing to " + lst[device]
                     os.system("sudo bash bin/trustDevice.sh " + str(device))    #trust the new device
-                    os.system("sudo bash bin/autoConnect.sh " + str(device))    #connect to the new device
+                    p = Process(target=connect, args=(str(device),))
+                    p.start()
                     os.system("sudo hciconfig hci0 noscan")                     #disable discoverable mode
 
                     lastDevices = lst                                           #re register device list
@@ -1378,7 +1391,7 @@ while True:
         if "getDevices" not in list(timers.keys()):
         	addTimer("getDevices", 500)
         if "getDevices" in k:
-        	p = Process(target=getInfo, args=("bin/info.txt"))
+        	p = Process(target=getInfo, args=("bin/info.txt",))
         	p.start()
 
         #try to connect to devices (auto connect)
