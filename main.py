@@ -581,10 +581,9 @@ def addDebug(*args):
         debug += ", "
 
 def getInfo(path):
-	os.system("bluetoothctl << EOF > " + path)
+	os.system("bluetoothctl > " + path)
 	os.system("info")
 	os.system("exit")
-	os.system("EOF")
 
 def readInfo(path):
     """
