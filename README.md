@@ -86,15 +86,16 @@ system-alias <Alias Here>
 exit
 ```
 
+Right click on the top menu bar and click ```Add / Remove Panel Items```
+then scroll down to bluetooth and select remove
+
 check to see if the bluetooth is working buy running
 
 ```sudo hciconfig hci0 piscan```
 
 the device with the alias should appear under your bluetooth section
 
-if the the device does not show up on an iphone you have to do the following
-
-got to a text to hex converter and convert the name you want to show up into hex
+if the the device does not show up on an iphone go to a text to hex converter and convert the name you want to show up into hex
 
 for example: ```Car System``` is ```4361722053797374656d```
 
