@@ -581,7 +581,7 @@ def addDebug(*args):
         debug += ", "
 
 def getInfo(path):
-	os.system("bluetoothctl << EOF >" + path)
+	os.system("bluetoothctl << EOF > " + path)
 	os.system("info")
 	os.system("exit")
 	os.system("EOF")
@@ -813,7 +813,7 @@ def connect(MAC):
 	os.system("bluetoothctl << EOF")
 	os.system("connect " + MAC)
 	os.system("exit")
-	os.system(EOF)
+	os.system("EOF")
 	print("process done, attempted to conenct to: " + MAC)
 
 #Update camera driver
@@ -1129,6 +1129,7 @@ def menu(disp):
 
             #get currnet devices and compare it to old devices to see if a new device was added
             lst = getLastDevices("bin/devices.txt")
+            print(lst)
             for device in lst:
                 if device not in prePairDevices:
                     pairStatus = "pairing to " + lst[device]
